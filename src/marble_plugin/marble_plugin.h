@@ -64,7 +64,8 @@ public:
 
   void GpsCallback( const sensor_msgs::NavSatFixConstPtr& gpspt );
 
-  private:
+
+private:
 
 Q_SIGNALS:
 
@@ -76,6 +77,7 @@ Q_SIGNALS:
       void SetKMLFile(bool envoke_file_dialog = true );
       void ChangeMarbleModelTheme(int idx );
       void FindGPSTopics();
+      void HideShowKML(int state);
 
   private:
 
@@ -86,6 +88,7 @@ Q_SIGNALS:
   ros::Subscriber m_sat_nav_fix_subscriber;
 
   QString m_last_kml_file;
+  bool m_show_kml;
 
 };
 } // namespace

@@ -65,6 +65,8 @@ MarblePlugin::MarblePlugin()
   setObjectName("MarbleWidgetPlugin");
 }
 
+
+
 void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 {
   // access standalone command line arguments
@@ -91,11 +93,15 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   refresh_icon.addFile(icon_path);
   ui_.refreshButton->setIcon(refresh_icon);
 
+
+  ui_.checkBox_show_KML->setChecked(true);
+
   FindGPSTopics();
 
   // Connections
   connect(ui_.comboBox, SIGNAL(activated (const QString &)), this, SLOT (ChangeGPSTopic(const QString &)));
   connect(ui_.refreshButton, SIGNAL(clicked()), this, SLOT(FindGPSTopics()));
+  connect(ui_.checkBox_show_KML, SIGNAL(stateChanged(int)), this, SLOT(HideShowKML(int)));
 
   connect( this , SIGNAL(NewGPSPosition(qreal,qreal)) , ui_.MarbleWidget , SLOT(centerOn(qreal,qreal)) );
   connect( ui_.lineEdit_kml , SIGNAL(returnPressed()) , this, SLOT( SetKMLFile() ));
@@ -129,18 +135,26 @@ void MarblePlugin::FindGPSTopics()
         TopicInfo topic = (TopicInfo)(*it);
         if(topic.datatype.compare("sensor_msgs/NavSatFix")==0)
         {
-//            std::cout << "found " << topic.name << std::endl;
             QString lineEdit_string(topic.name.c_str());
             ui_.comboBox->addItem(lineEdit_string);
         }
     }
 }
 
-void MarblePlugin::shutdownPlugin()
+void MarblePlugin::HideShowKML(int state)
 {
-  // unregister all publishers here
-  m_sat_nav_fix_subscriber.shutdown();
+    if(!m_last_kml_file.isNull() && state == 0)
+    {
+        ui_.MarbleWidget->model()->removeGeoData(m_last_kml_file);
+    }
+    if(!m_last_kml_file.isNull() && state == 2)
+    {
+        ui_.MarbleWidget->model()->addGeoDataFile( m_last_kml_file );
+    }
+
 }
+
+
 
 void MarblePlugin::ChangeMarbleModelTheme(int idx )
 {
@@ -176,9 +190,10 @@ void MarblePlugin::SetKMLFile( bool envoke_file_dialog )
             ui_.MarbleWidget->model()->removeGeoData(m_last_kml_file);
         }
 
-        QString filename(fi.absoluteFilePath());
-
-        ui_.MarbleWidget->model()->addGeoDataFile( fi.absoluteFilePath() );
+        if(ui_.checkBox_show_KML->isChecked())
+        {
+            ui_.MarbleWidget->model()->addGeoDataFile( fi.absoluteFilePath() );
+        }
         m_last_kml_file = fi.absoluteFilePath() ;
 
         ui_.lineEdit_kml->setText( fi.absoluteFilePath() );
@@ -225,6 +240,7 @@ void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cp
     instance_settings.setValue( "marble_plugin_zoom" , ui_.MarbleWidget->distance() );
     instance_settings.setValue( "marble_theme_index" , ui_.comboBox_theme->currentIndex() );
     instance_settings.setValue( "marble_center" , ui_.checkBox_center->isChecked() );
+    instance_settings.setValue( "show_KML" , ui_.checkBox_show_KML->isChecked() );
 }
 
 void MarblePlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings)
@@ -236,6 +252,7 @@ void MarblePlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, 
     ui_.lineEdit_kml->setText( instance_settings.value("marble_plugin_kml_file" , "" ).toString().replace("___dot_replacement___",".") );
     ui_.comboBox_theme->setCurrentIndex( instance_settings.value( "marble_theme_index" , 0 ).toInt() );
     ui_.checkBox_center->setChecked( instance_settings.value( "marble_center" , true ).toBool());
+    ui_.checkBox_center->setChecked( instance_settings.value( "show_KML" , true ).toBool());
 
   // std::cout << "Set distance " << instance_settings.value( "marble_plugin_zoom" ).toReal() << std::endl;
 
@@ -243,6 +260,12 @@ void MarblePlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, 
 
   // @TODO: Does not work since the KML loading changes the zoom
   ui_.MarbleWidget->setDistance( instance_settings.value( "marble_plugin_zoom" , 0.05 ).toReal() );
+}
+
+void MarblePlugin::shutdownPlugin()
+{
+  // unregister all publishers here
+  m_sat_nav_fix_subscriber.shutdown();
 }
 
 /*bool hasConfiguration() const
