@@ -44,6 +44,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 // Own Includes
 #include <marble_plugin/ui_marble_plugin.h>
+#include "drawable_marble_widget.h"
 
 namespace marble_plugin {
 
@@ -84,6 +85,7 @@ Q_SIGNALS:
   Ui_Form ui_;
 
   QWidget* widget_;
+  DrawableMarbleWidget* m_drawable_widget;
 
   ros::Subscriber m_sat_nav_fix_subscriber;
 

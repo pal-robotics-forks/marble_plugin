@@ -8,10 +8,12 @@ include(${QT_USE_FILE})
 
 set(marble_plugin_SRCS
   marble_plugin.cpp
+  drawable_marble_widget.cpp
 )
 
 set(marble_plugin_HDRS
   marble_plugin.h
+  drawable_marble_widget.h
 )
 
 set(marble_plugin_UIS
