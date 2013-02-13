@@ -85,6 +85,8 @@ Q_SIGNALS:
 
   ros::Subscriber m_sat_nav_fix_subscriber;
 
+  QString m_last_kml_file;
+
 };
 } // namespace
 #endif // _MARBLE_PLUGIN_H

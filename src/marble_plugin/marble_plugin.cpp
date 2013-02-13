@@ -98,7 +98,6 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   connect(ui_.refreshButton, SIGNAL(clicked()), this, SLOT(FindGPSTopics()));
 
   connect( this , SIGNAL(NewGPSPosition(qreal,qreal)) , ui_.MarbleWidget , SLOT(centerOn(qreal,qreal)) );
-//  connect( ui_.lineEdit_topic , SIGNAL(editingFinished()) , this , SLOT( ChangeGPSTopic()) );
   connect( ui_.lineEdit_kml , SIGNAL(returnPressed()) , this, SLOT( SetKMLFile() ));
   connect( ui_.comboBox_theme , SIGNAL(currentIndexChanged(int)) , this , SLOT(ChangeMarbleModelTheme(int)));
 
@@ -172,7 +171,15 @@ void MarblePlugin::SetKMLFile( bool envoke_file_dialog )
 
     if( fi.isFile() )
     {
+        if(!m_last_kml_file.isNull())
+        {
+            ui_.MarbleWidget->model()->removeGeoData(m_last_kml_file);
+        }
+
+        QString filename(fi.absoluteFilePath());
+
         ui_.MarbleWidget->model()->addGeoDataFile( fi.absoluteFilePath() );
+        m_last_kml_file = fi.absoluteFilePath() ;
 
         ui_.lineEdit_kml->setText( fi.absoluteFilePath() );
     }
