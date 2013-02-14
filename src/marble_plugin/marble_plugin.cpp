@@ -79,15 +79,15 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   // add widget to the user interface
   ui_.setupUi( widget_ );
 
-
-  //Comment this to return to normal widget
-  ui_.MarbleWidget = new DrawableMarbleWidget(ui_.MarbleWidget);
-
   ui_.MarbleWidget->setMapThemeId("earth/openstreetmap/openstreetmap.dgml");
   ui_.MarbleWidget->setProjection( Marble::Mercator );
   ui_.MarbleWidget->centerOn( 115.87164 , -31.93452 , false );  // My Happy Place: The Scotto
   ui_.MarbleWidget->setDistance(0.05);
-  ui_.MarbleWidget->setBaseSize(5000, 5000);
+
+  //  ui_.MarbleWidget->setAutoFillBackground(true);
+//  ui_.MarbleWidget->setFixedHeight(1980);
+//  ui_.MarbleWidget->setFixedWidth(1200);
+//  ui_.MarbleWidget->set
 
   context.addWidget(widget_);
   ui_.comboBox_theme->setModel( ui_.MarbleWidget->model()->mapThemeManager()->mapThemeModel() );

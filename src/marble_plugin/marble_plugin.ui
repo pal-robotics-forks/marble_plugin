@@ -16,37 +16,37 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="1">
+     <item row="1" column="1">
       <widget class="QComboBox" name="comboBox"/>
      </item>
-     <item row="1" column="2">
+     <item row="2" column="2">
       <widget class="QCheckBox" name="checkBox_show_KML">
        <property name="text">
         <string>show KML</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="4">
+     <item row="1" column="4">
       <widget class="QComboBox" name="comboBox_theme"/>
      </item>
-     <item row="0" column="0">
+     <item row="1" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>GPS Topic</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <widget class="QLineEdit" name="lineEdit_kml"/>
      </item>
-     <item row="1" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>KML File:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
+     <item row="1" column="2">
       <widget class="QPushButton" name="refreshButton">
        <property name="text">
         <string/>
@@ -59,14 +59,14 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="3">
+     <item row="1" column="3">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Map Theme</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="4">
+     <item row="2" column="4">
       <widget class="QCheckBox" name="checkBox_center">
        <property name="text">
         <string>Center On GPS Positon</string>
@@ -76,15 +76,8 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0" colspan="5">
-      <widget class="Marble::MarbleWidget" name="MarbleWidget">
-       <property name="toolTip">
-        <string>The Earth</string>
-       </property>
-       <property name="whatsThis">
-        <string>The Marble widget displays a virtual globe.</string>
-       </property>
-      </widget>
+     <item row="3" column="0" colspan="5">
+      <widget class="marble_plugin::DrawableMarbleWidget" name="MarbleWidget" native="true"/>
      </item>
     </layout>
    </item>
@@ -92,9 +85,10 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Marble::MarbleWidget</class>
+   <class>marble_plugin::DrawableMarbleWidget</class>
    <extends>QWidget</extends>
-   <header>MarbleWidget.h</header>
+   <header>marble_plugin/drawable_marble_widget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

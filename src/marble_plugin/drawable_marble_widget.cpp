@@ -11,12 +11,13 @@ DrawableMarbleWidget::DrawableMarbleWidget(QWidget *parent)
 
 void DrawableMarbleWidget::customPaint(Marble::GeoPainter *painter)
 {
+  // MarbleWidget::customPaint( painter );
 
-  QPen pen(Qt::red);
-  pen.setWidth(20);
-  painter->setPen(pen);
-
-  painter->drawEllipse(50,50, 60, 60);
+//    GeoDataCoordinates home(8.4, 49.0, 0.0, GeoDataCoordinates::Degree);
+//    painter->setPen(Qt::green);
+//    painter->drawEllipse(home, 7, 7);
+//    painter->setPen(Qt::black);
+//    painter->drawText(home, "Hello Marble!");
 
 }
 

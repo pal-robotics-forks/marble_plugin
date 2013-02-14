@@ -14,6 +14,7 @@ class DrawableMarbleWidget : public MarbleWidget
   Q_OBJECT
   
   public:
+
     DrawableMarbleWidget(QWidget *parent=0);
 
 
@@ -21,7 +22,7 @@ class DrawableMarbleWidget : public MarbleWidget
 
     
   protected:
-    void customPaint(GeoPainter *painter);
+    virtual void customPaint(GeoPainter *painter);
 
   private slots:
 
