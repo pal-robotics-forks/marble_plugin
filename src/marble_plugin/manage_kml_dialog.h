@@ -24,11 +24,13 @@ public:
     std::map< QString, bool> getKmlFiles();
 
     
+    void addAllKMLsToTreeWiev(std::map< QString, bool>& kml_files);
 private Q_SLOTS:
     void SetKMLFile(bool envoke_file_dialog = true );
     void deleteKML();
     void checkBoxClicked(int state);
     void cancelButtonClicked();
+    void okButtonClicked();
 
 private:
     void addKMLToTreeWiev(QFileInfo &kmlFile, bool show);

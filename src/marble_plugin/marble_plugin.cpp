@@ -97,7 +97,6 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   ui_.refreshButton->setIcon(refresh_icon);
 
 
-  ui_.checkBox_show_KML->setChecked(true);
 
   FindGPSTopics();
 
@@ -107,7 +106,6 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   connect(ui_.manageKMLButton, SIGNAL(clicked()), this, SLOT(ManageKML()));
 
   connect( this , SIGNAL(NewGPSPosition(qreal,qreal)) , ui_.MarbleWidget , SLOT(centerOn(qreal,qreal)) );
-  connect( ui_.lineEdit_kml , SIGNAL(returnPressed()) , this, SLOT( SetKMLFile() ));
   connect( ui_.comboBox_theme , SIGNAL(currentIndexChanged(int)) , this , SLOT(ChangeMarbleModelTheme(int)));
 
   // AutoNavigation Connections ... soon
@@ -275,11 +273,9 @@ void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cp
   // save intrinsic configuration, usually using:
     QString topic(m_sat_nav_fix_subscriber.getTopic().c_str());
     instance_settings.setValue( "marble_plugin_topic", topic );
-    instance_settings.setValue( "marble_plugin_kml_file" , ui_.lineEdit_kml->text().replace("." , "___dot_replacement___" ) );
     instance_settings.setValue( "marble_plugin_zoom" , ui_.MarbleWidget->distance() );
     instance_settings.setValue( "marble_theme_index" , ui_.comboBox_theme->currentIndex() );
     instance_settings.setValue( "marble_center" , ui_.checkBox_center->isChecked() );
-    instance_settings.setValue( "show_KML" , ui_.checkBox_show_KML->isChecked() );
 }
 
 void MarblePlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings)
@@ -288,10 +284,8 @@ void MarblePlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, 
     const QString topic = instance_settings.value("marble_plugin_topic").toString();
     ChangeGPSTopic(topic);
 
-    ui_.lineEdit_kml->setText( instance_settings.value("marble_plugin_kml_file" , "" ).toString().replace("___dot_replacement___",".") );
     ui_.comboBox_theme->setCurrentIndex( instance_settings.value( "marble_theme_index" , 0 ).toInt() );
     ui_.checkBox_center->setChecked( instance_settings.value( "marble_center" , true ).toBool());
-    ui_.checkBox_center->setChecked( instance_settings.value( "show_KML" , true ).toBool());
 
   // std::cout << "Set distance " << instance_settings.value( "marble_plugin_zoom" ).toReal() << std::endl;
 
