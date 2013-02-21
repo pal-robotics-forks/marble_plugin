@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1071</width>
-    <height>770</height>
+    <width>767</width>
+    <height>697</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -78,6 +78,13 @@
      </item>
      <item row="3" column="0" colspan="5">
       <widget class="marble_plugin::DrawableMarbleWidget" name="MarbleWidget" native="true"/>
+     </item>
+     <item row="2" column="3">
+      <widget class="QPushButton" name="manageKMLButton">
+       <property name="text">
+        <string>Manage KML</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

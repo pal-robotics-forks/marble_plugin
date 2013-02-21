@@ -51,6 +51,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 #include <ros/package.h>
 #include "drawable_marble_widget.h"
+#include "manage_kml_dialog.h"
 
 // @TODO: setDistance does not work on reloading
 // @TODO: ComboBox for the MarbleWidget projection method
@@ -84,11 +85,6 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   ui_.MarbleWidget->centerOn( 115.87164 , -31.93452 , false );  // My Happy Place: The Scotto
   ui_.MarbleWidget->setDistance(0.05);
 
-  //  ui_.MarbleWidget->setAutoFillBackground(true);
-//  ui_.MarbleWidget->setFixedHeight(1980);
-//  ui_.MarbleWidget->setFixedWidth(1200);
-//  ui_.MarbleWidget->set
-
   context.addWidget(widget_);
   ui_.comboBox_theme->setModel( ui_.MarbleWidget->model()->mapThemeManager()->mapThemeModel() );
 
@@ -109,6 +105,7 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   connect(ui_.comboBox, SIGNAL(activated (const QString &)), this, SLOT (ChangeGPSTopic(const QString &)));
   connect(ui_.refreshButton, SIGNAL(clicked()), this, SLOT(FindGPSTopics()));
   connect(ui_.checkBox_show_KML, SIGNAL(stateChanged(int)), this, SLOT(HideShowKML(int)));
+  connect(ui_.manageKMLButton, SIGNAL(clicked()), this, SLOT(ManageKML()));
 
   connect( this , SIGNAL(NewGPSPosition(qreal,qreal)) , ui_.MarbleWidget , SLOT(centerOn(qreal,qreal)) );
   connect( ui_.lineEdit_kml , SIGNAL(returnPressed()) , this, SLOT( SetKMLFile() ));
@@ -130,9 +127,50 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
     */
 }
 
+void MarblePlugin::ManageKML()
+{
+    m_kmlDialog.exec();
+
+    std::map< QString, bool> kml_files = m_kmlDialog.getKmlFiles();
+    addKMLData(kml_files, true);
+}
+
+void MarblePlugin::addKMLData(std::map< QString, bool>& kml_files, bool overwrite)
+{
+    if(overwrite)
+    {
+        clearKMLData();
+    }
+
+    std::map<QString, bool>::iterator it;
+    for(it=kml_files.begin(); it != kml_files.end(); it++)
+    {
+        QString filepath = it->first;
+        bool show = it->second;
+
+        if(show)
+        {
+            ui_.MarbleWidget->model()->addGeoDataFile( filepath );
+            m_last_kml_data.push_back(filepath);
+        }
+    }
+}
+
+void MarblePlugin::clearKMLData()
+{
+    for(std::list<QString>::iterator it = m_last_kml_data.begin(); it != m_last_kml_data.end(); it++)
+    {
+        ui_.MarbleWidget->model()->removeGeoData(*it);
+    }
+    m_last_kml_data.clear();
+}
+
+
+
 void MarblePlugin::FindGPSTopics()
 {
     using namespace ros::master;
+
     std::vector<TopicInfo> topic_infos;
     getTopics(topic_infos);
 
@@ -144,23 +182,16 @@ void MarblePlugin::FindGPSTopics()
         {
             QString lineEdit_string(topic.name.c_str());
             ui_.comboBox->addItem(lineEdit_string);
+
+            if(m_sat_nav_fix_subscriber.getTopic().size() == 0)
+            {
+                m_sat_nav_fix_subscriber = getNodeHandle().subscribe< sensor_msgs::NavSatFix >(
+                           topic.name.c_str() , 10 , &MarblePlugin::GpsCallback, this );
+            }
         }
+
     }
 }
-
-void MarblePlugin::HideShowKML(int state)
-{
-    if(!m_last_kml_file.isNull() && state == 0)
-    {
-        ui_.MarbleWidget->model()->removeGeoData(m_last_kml_file);
-    }
-    if(!m_last_kml_file.isNull() && state == 2)
-    {
-        ui_.MarbleWidget->model()->addGeoDataFile( m_last_kml_file );
-    }
-
-}
-
 
 
 void MarblePlugin::ChangeMarbleModelTheme(int idx )
@@ -181,34 +212,34 @@ void MarblePlugin::ChangeGPSTopic(const QString &topic_name)
 
 void MarblePlugin::SetKMLFile( bool envoke_file_dialog )
 {
-    QFileInfo fi( ui_.lineEdit_kml->text() );
+//    QFileInfo fi( ui_.lineEdit_kml->text() );
 
-    if( !fi.isFile() && envoke_file_dialog )
-    {
-        QString fn = QFileDialog::getOpenFileName( 0 ,
-                                     tr("Open Geo Data File"), tr("") , tr("Geo Data Files (*.kml)"));
-        fi.setFile( fn );
-    }
+//    if( !fi.isFile() && envoke_file_dialog )
+//    {
+//        QString fn = QFileDialog::getOpenFileName( 0 ,
+//                                     tr("Open Geo Data File"), tr("") , tr("Geo Data Files (*.kml)"));
+//        fi.setFile( fn );
+//    }
 
-    if( fi.isFile() )
-    {
-        if(!m_last_kml_file.isNull())
-        {
-            ui_.MarbleWidget->model()->removeGeoData(m_last_kml_file);
-        }
+//    if( fi.isFile() )
+//    {
+//        if(!m_last_kml_file.isNull())
+//        {
+//            ui_.MarbleWidget->model()->removeGeoData(m_last_kml_file);
+//        }
 
-        if(ui_.checkBox_show_KML->isChecked())
-        {
-            ui_.MarbleWidget->model()->addGeoDataFile( fi.absoluteFilePath() );
-        }
-        m_last_kml_file = fi.absoluteFilePath() ;
+//        if(ui_.checkBox_show_KML->isChecked())
+//        {
+//            ui_.MarbleWidget->model()->addGeoDataFile( fi.absoluteFilePath() );
+//        }
+//        m_last_kml_file = fi.absoluteFilePath() ;
 
-        ui_.lineEdit_kml->setText( fi.absoluteFilePath() );
-    }
-    else
-    {
-        ui_.lineEdit_kml->setText( "" );
-    }
+//        ui_.lineEdit_kml->setText( fi.absoluteFilePath() );
+//    }
+//    else
+//    {
+//        ui_.lineEdit_kml->setText( "" );
+//    }
 }
 
 void MarblePlugin::GpsCallback( const sensor_msgs::NavSatFixConstPtr& gpspt )

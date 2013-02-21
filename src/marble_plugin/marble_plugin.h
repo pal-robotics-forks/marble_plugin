@@ -45,6 +45,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 // Own Includes
 #include <marble_plugin/ui_marble_plugin.h>
 #include "drawable_marble_widget.h"
+#include "manage_kml_dialog.h"
 
 namespace marble_plugin {
 
@@ -78,19 +79,24 @@ Q_SIGNALS:
       void SetKMLFile(bool envoke_file_dialog = true );
       void ChangeMarbleModelTheme(int idx );
       void FindGPSTopics();
-      void HideShowKML(int state);
+      void ManageKML();
 
   private:
 
+      void clearKMLData();
+      void addKMLData(std::map<QString, bool>& kml_files, bool overwrite);
+
   Ui_Form ui_;
 
-  QWidget* widget_;
-  DrawableMarbleWidget* m_drawable_widget;
 
-  ros::Subscriber m_sat_nav_fix_subscriber;
 
-  QString m_last_kml_file;
-  bool m_show_kml;
+    QWidget* widget_;
+    DrawableMarbleWidget* m_drawable_widget;
+
+    ManageKmlDialog m_kmlDialog;
+
+    ros::Subscriber m_sat_nav_fix_subscriber;
+    std::list< QString > m_last_kml_data;
 
 };
 } // namespace

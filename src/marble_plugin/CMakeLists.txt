@@ -9,15 +9,18 @@ include(${QT_USE_FILE})
 set(marble_plugin_SRCS
   marble_plugin.cpp
   drawable_marble_widget.cpp
+  manage_kml_dialog.cpp
 )
 
 set(marble_plugin_HDRS
   marble_plugin.h
   drawable_marble_widget.h
+  manage_kml_dialog.h
 )
 
 set(marble_plugin_UIS
   marble_plugin.ui
+  manage_kml_dialog.ui
 )
 
 set(marble_plugin_INCLUDE_DIRECTORIES
