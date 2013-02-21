@@ -104,7 +104,6 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   // Connections
   connect(ui_.comboBox, SIGNAL(activated (const QString &)), this, SLOT (ChangeGPSTopic(const QString &)));
   connect(ui_.refreshButton, SIGNAL(clicked()), this, SLOT(FindGPSTopics()));
-  connect(ui_.checkBox_show_KML, SIGNAL(stateChanged(int)), this, SLOT(HideShowKML(int)));
   connect(ui_.manageKMLButton, SIGNAL(clicked()), this, SLOT(ManageKML()));
 
   connect( this , SIGNAL(NewGPSPosition(qreal,qreal)) , ui_.MarbleWidget , SLOT(centerOn(qreal,qreal)) );
@@ -129,10 +128,12 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
 void MarblePlugin::ManageKML()
 {
-    m_kmlDialog.exec();
-
-    std::map< QString, bool> kml_files = m_kmlDialog.getKmlFiles();
-    addKMLData(kml_files, true);
+    ManageKmlDialog kmlDialog(m_last_kml_data);
+    if(kmlDialog.exec() == QDialog::Accepted)
+    {
+        std::map< QString, bool> kml_files = kmlDialog.getKmlFiles();
+        addKMLData(kml_files, true);
+    }
 }
 
 void MarblePlugin::addKMLData(std::map< QString, bool>& kml_files, bool overwrite)
@@ -151,16 +152,16 @@ void MarblePlugin::addKMLData(std::map< QString, bool>& kml_files, bool overwrit
         if(show)
         {
             ui_.MarbleWidget->model()->addGeoDataFile( filepath );
-            m_last_kml_data.push_back(filepath);
         }
+        m_last_kml_data[filepath] = show;
     }
 }
 
 void MarblePlugin::clearKMLData()
 {
-    for(std::list<QString>::iterator it = m_last_kml_data.begin(); it != m_last_kml_data.end(); it++)
+    for(std::map< QString, bool>::iterator it = m_last_kml_data.begin(); it != m_last_kml_data.end(); it++)
     {
-        ui_.MarbleWidget->model()->removeGeoData(*it);
+        ui_.MarbleWidget->model()->removeGeoData(it->first);
     }
     m_last_kml_data.clear();
 }

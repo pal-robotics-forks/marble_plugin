@@ -93,10 +93,8 @@ Q_SIGNALS:
     QWidget* widget_;
     DrawableMarbleWidget* m_drawable_widget;
 
-    ManageKmlDialog m_kmlDialog;
-
     ros::Subscriber m_sat_nav_fix_subscriber;
-    std::list< QString > m_last_kml_data;
+    std::map< QString, bool> m_last_kml_data;
 
 };
 } // namespace

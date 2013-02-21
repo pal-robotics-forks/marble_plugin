@@ -18,7 +18,7 @@ class ManageKmlDialog : public QDialog
     Q_OBJECT
     
 public:
-    explicit ManageKmlDialog(QWidget *parent = 0);
+    explicit ManageKmlDialog(std::map< QString, bool> &kml_files, QWidget *parent = 0);
     ~ManageKmlDialog();
 
     std::map< QString, bool> getKmlFiles();
@@ -28,15 +28,13 @@ private Q_SLOTS:
     void SetKMLFile(bool envoke_file_dialog = true );
     void deleteKML();
     void checkBoxClicked(int state);
+    void cancelButtonClicked();
 
 private:
     void addKMLToTreeWiev(QFileInfo &kmlFile, bool show);
 
     Ui::manageKmlDialog *ui;
     std::map< QString, bool> m_kml_files;
-
-
-
 
 };
 

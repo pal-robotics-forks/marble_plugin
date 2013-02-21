@@ -11,7 +11,7 @@
 
 namespace marble_plugin{
 
-ManageKmlDialog::ManageKmlDialog(QWidget *parent) :
+ManageKmlDialog::ManageKmlDialog(std::map< QString, bool>& kml_files, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::manageKmlDialog)
 {
@@ -21,22 +21,23 @@ ManageKmlDialog::ManageKmlDialog(QWidget *parent) :
     ui->kml_treeWidget->header()->resizeSection(0, 630);
     ui->kml_treeWidget->header()->resizeSection(1, 45);
 
-
-    std::map<QString, bool>::iterator it;
-    for(it=m_kml_files.begin(); it != m_kml_files.end(); it++)
+    for(std::map< QString, bool>::iterator it = kml_files.begin(); it!=kml_files.end();it++)
     {
-        QString filepath = it->first;
-        bool show = it->second;
-
+        QString filename = it->first;
         QFileInfo fi;
-        fi.setFile(filepath);
+        fi.setFile(filename);
+        bool show = it->second;
 
         addKMLToTreeWiev(fi, show);
     }
 
+    m_kml_files = kml_files;
 
     connect( ui->addButton , SIGNAL(clicked()) , this, SLOT( SetKMLFile() ));
     connect( ui->removeButton, SIGNAL(clicked()), this, SLOT(deleteKML()));
+    connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()) );
+    connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(reject()) );
+    connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(cancelButtonClicked()));
 }
 
 ManageKmlDialog::~ManageKmlDialog()
@@ -102,6 +103,11 @@ void ManageKmlDialog::checkBoxClicked(int state)
 std::map< QString, bool> ManageKmlDialog::getKmlFiles()
 {
     return m_kml_files;
+}
+
+void ManageKmlDialog::cancelButtonClicked()
+{
+    m_kml_files.clear();
 }
 
 

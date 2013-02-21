@@ -22,6 +22,9 @@
   <property name="windowTitle">
    <string>KML Management</string>
   </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
   <widget class="QWidget" name="gridLayoutWidget_2">
    <property name="geometry">
     <rect>
@@ -32,21 +35,21 @@
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
+    <item row="1" column="0">
      <widget class="QPushButton" name="addButton">
       <property name="text">
        <string>add KML</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
+    <item row="1" column="1">
      <widget class="QPushButton" name="removeButton">
       <property name="text">
        <string>remove KML</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="0" colspan="2">
+    <item row="0" column="0" colspan="3">
      <widget class="QTreeWidget" name="kml_treeWidget">
       <property name="wordWrap">
        <bool>true</bool>
@@ -98,10 +101,15 @@
       </column>
      </widget>
     </item>
+    <item row="1" column="2">
+     <widget class="QDialogButtonBox" name="buttonBox">
+      <property name="standardButtons">
+       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
-  <zorder>gridLayoutWidget_2</zorder>
-  <zorder>kml_treeWidget</zorder>
  </widget>
  <resources/>
  <connections/>
