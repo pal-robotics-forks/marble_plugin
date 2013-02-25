@@ -233,6 +233,8 @@ void MarblePlugin::GpsCallback( const sensor_msgs::NavSatFixConstPtr& gpspt )
     {
         emit NewGPSPosition( gpspt->longitude , gpspt->latitude );
         ui_.MarbleWidget->screenCoordinates(gpspt->longitude,gpspt->latitude , _x , _y );
+        GeoDataCoordinates postition(gpspt->longitude, gpspt->latitude, gpspt->altitude, GeoDataCoordinates::Degree);
+        ui_.MarbleWidget->receiveLastPosition(postition);
     }
 }
 

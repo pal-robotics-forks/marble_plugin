@@ -16,6 +16,7 @@ class DrawableMarbleWidget : public MarbleWidget
   public:
 
     DrawableMarbleWidget(QWidget *parent=0);
+    void receiveLastPosition(GeoDataCoordinates& postion);
 
 
   public slots:
@@ -28,6 +29,13 @@ class DrawableMarbleWidget : public MarbleWidget
 
     
   private:
+
+    QImage roateCar(QImage* image);
+    double dist(double x1, double x2, double y1, double y2);
+
+    GeoDataCoordinates m_actual_position;
+    GeoDataCoordinates m_last_position;
+    QImage m_car;
 
     
   private:
