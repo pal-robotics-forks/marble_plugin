@@ -209,38 +209,6 @@ void MarblePlugin::ChangeGPSTopic(const QString &topic_name)
                 topic_name.toStdString().c_str() , 10 , &MarblePlugin::GpsCallback, this );
 }
 
-void MarblePlugin::SetKMLFile( bool envoke_file_dialog )
-{
-//    QFileInfo fi( ui_.lineEdit_kml->text() );
-
-//    if( !fi.isFile() && envoke_file_dialog )
-//    {
-//        QString fn = QFileDialog::getOpenFileName( 0 ,
-//                                     tr("Open Geo Data File"), tr("") , tr("Geo Data Files (*.kml)"));
-//        fi.setFile( fn );
-//    }
-
-//    if( fi.isFile() )
-//    {
-//        if(!m_last_kml_file.isNull())
-//        {
-//            ui_.MarbleWidget->model()->removeGeoData(m_last_kml_file);
-//        }
-
-//        if(ui_.checkBox_show_KML->isChecked())
-//        {
-//            ui_.MarbleWidget->model()->addGeoDataFile( fi.absoluteFilePath() );
-//        }
-//        m_last_kml_file = fi.absoluteFilePath() ;
-
-//        ui_.lineEdit_kml->setText( fi.absoluteFilePath() );
-//    }
-//    else
-//    {
-//        ui_.lineEdit_kml->setText( "" );
-//    }
-}
-
 void MarblePlugin::GpsCallback( const sensor_msgs::NavSatFixConstPtr& gpspt )
 {
     // std::cout << "GPS Callback " << gpspt->longitude << " " << gpspt->latitude << std::endl;
@@ -276,6 +244,22 @@ void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cp
     instance_settings.setValue( "marble_plugin_zoom" , ui_.MarbleWidget->distance() );
     instance_settings.setValue( "marble_theme_index" , ui_.comboBox_theme->currentIndex() );
     instance_settings.setValue( "marble_center" , ui_.checkBox_center->isChecked() );
+
+
+    //save kml files
+    int i=0;
+    instance_settings.setValue("kml_number", m_last_kml_data.size());
+    for(std::map< QString, bool>::const_iterator it = m_last_kml_data.begin(); it != m_last_kml_data.end(); it++)
+    {
+        QString key("kml_file_");
+        key.append(i);
+        instance_settings.setValue(key, it->first);
+
+        //TODO: save visibility. Another way must be foud here
+//        key.append("_show");
+//        instance_settings.setValue(key, it->second);
+        i++;
+    }
 }
 
 void MarblePlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings)
@@ -287,9 +271,20 @@ void MarblePlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, 
     ui_.comboBox_theme->setCurrentIndex( instance_settings.value( "marble_theme_index" , 0 ).toInt() );
     ui_.checkBox_center->setChecked( instance_settings.value( "marble_center" , true ).toBool());
 
-  // std::cout << "Set distance " << instance_settings.value( "marble_plugin_zoom" ).toReal() << std::endl;
 
-  SetKMLFile(false);
+    //load kml files
+    std::map< QString, bool> kml_files;
+    int number = instance_settings.value("kml_number",0).toInt();
+    for(int i=0; i<number; i++)
+    {
+        QString key("kml_file_");
+        key.append(i);
+        kml_files[instance_settings.value(key,0).toString()] = true;
+    }
+    addKMLData(kml_files, true);
+
+
+  // std::cout << "Set distance " << instance_settings.value( "marble_plugin_zoom" ).toReal() << std::endl;
 
   // @TODO: Does not work since the KML loading changes the zoom
   ui_.MarbleWidget->setDistance( instance_settings.value( "marble_plugin_zoom" , 0.05 ).toReal() );
