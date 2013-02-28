@@ -50,8 +50,7 @@ void ManageKmlDialog::SetKMLFile( bool envoke_file_dialog )
 
     if(envoke_file_dialog )
     {
-        QString fn = QFileDialog::getOpenFileName( 0 ,
-                                     tr("Open Geo Data File"), tr("") , tr("Geo Data Files (*.kml)"));
+        QString fn = QFileDialog::getOpenFileName( 0, tr("Open Geo Data File"), tr("") , tr("Geo Data Files (*.kml)"));
         fi.setFile( fn );
     }
 
