@@ -22,7 +22,8 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 //----------------------------------------------------------------------
 /*!\file
 *
-* \author  Tobias Bär <baer@fzi.de> Jan Aidel <aiden@fzi.de>
+* \author  Tobias Baer <baer@fzi.de> 
+*          Jan Aidel <aiden@fzi.de>
 * \date    2013-01-11
 *
 */
