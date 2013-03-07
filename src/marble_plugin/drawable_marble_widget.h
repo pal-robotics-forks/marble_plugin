@@ -50,17 +50,28 @@ class DrawableMarbleWidget : public MarbleWidget
     void receiveLastPosition(GeoDataCoordinates& postion);
 
     
-  protected:
+
+protected:
     virtual void customPaint(GeoPainter *painter);
 
   private:
 
-    QImage roateCar(QImage* image);
+    QImage roateCar(QImage* car_image);
+
+    void loadImage(QImage& car, std::string& path );
     double dist(double x1, double x2, double y1, double y2);
+    bool posChanged(double x1, double y1, double x2, double y2, double threshold);
+
+    bool showAsPoint(double x1, double y1, double x2, double y2);
+    bool showAsArrow(double x1, double y1, double x2, double y2);
 
     GeoDataCoordinates m_actual_position;
     GeoDataCoordinates m_last_position;
-    QImage m_car;
+    double m_last_angle_grad;
+    double m_actual_angle_grad;
+    QImage* m_car;
+    QImage m_arrow;
+    QImage m_point;
 
     
   private:

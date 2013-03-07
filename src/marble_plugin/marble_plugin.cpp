@@ -99,11 +99,11 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
 
 
-  FindGPSTopics();
+  FindRosTopics();
 
   // Connections
   connect(ui_.comboBox, SIGNAL(activated (const QString &)), this, SLOT (ChangeGPSTopic(const QString &)));
-  connect(ui_.refreshButton, SIGNAL(clicked()), this, SLOT(FindGPSTopics()));
+  connect(ui_.refreshButton, SIGNAL(clicked()), this, SLOT(FindRosTopics()));
   connect(ui_.manageKMLButton, SIGNAL(clicked()), this, SLOT(ManageKML()));
 
   connect( this , SIGNAL(NewGPSPosition(qreal,qreal)) , ui_.MarbleWidget , SLOT(centerOn(qreal,qreal)) );
@@ -167,13 +167,14 @@ void MarblePlugin::clearKMLData()
 
 
 
-void MarblePlugin::FindGPSTopics()
+void MarblePlugin::FindRosTopics()
 {
     using namespace ros::master;
 
     std::vector<TopicInfo> topic_infos;
     getTopics(topic_infos);
 
+    //GPS Topics
     ui_.comboBox->clear();
     for(std::vector<TopicInfo>::iterator it=topic_infos.begin(); it!=topic_infos.end();it++)
     {
@@ -191,6 +192,7 @@ void MarblePlugin::FindGPSTopics()
         }
 
     }
+
 }
 
 
