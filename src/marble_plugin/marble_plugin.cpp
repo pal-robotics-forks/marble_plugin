@@ -98,12 +98,11 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   ui_.refreshButton->setIcon(refresh_icon);
 
 
-
-  FindRosTopics();
+  FindNavSatFixTopics();
 
   // Connections
   connect(ui_.comboBox, SIGNAL(activated (const QString &)), this, SLOT (ChangeGPSTopic(const QString &)));
-  connect(ui_.refreshButton, SIGNAL(clicked()), this, SLOT(FindRosTopics()));
+  connect(ui_.refreshButton, SIGNAL(clicked()), this, SLOT(FindNavSatFixTopics()));
   connect(ui_.manageKMLButton, SIGNAL(clicked()), this, SLOT(ManageKML()));
 
   connect( this , SIGNAL(NewGPSPosition(qreal,qreal)) , ui_.MarbleWidget , SLOT(centerOn(qreal,qreal)) );
@@ -167,7 +166,7 @@ void MarblePlugin::clearKMLData()
 
 
 
-void MarblePlugin::FindRosTopics()
+void MarblePlugin::FindNavSatFixTopics()
 {
     using namespace ros::master;
 
@@ -183,14 +182,7 @@ void MarblePlugin::FindRosTopics()
         {
             QString lineEdit_string(topic.name.c_str());
             ui_.comboBox->addItem(lineEdit_string);
-
-            if(m_sat_nav_fix_subscriber.getTopic().size() == 0)
-            {
-                m_sat_nav_fix_subscriber = getNodeHandle().subscribe< sensor_msgs::NavSatFix >(
-                           topic.name.c_str() , 10 , &MarblePlugin::GpsCallback, this );
-            }
         }
-
     }
 
 }
