@@ -93,7 +93,7 @@ Q_SIGNALS:
     DrawableMarbleWidget* m_drawable_widget;
 
     ros::Subscriber m_sat_nav_fix_subscriber;
-    ros::Subscriber m_motion_subscriber;
+
     std::map< QString, bool> m_last_kml_data;
 
 };
