@@ -84,7 +84,7 @@ Q_SIGNALS:
 
   void ChangeGPSTopic(const QString &topic_name);
   void ChangeMarbleModelTheme(int idx );
-  void FindRosTopics();
+  void FindNavSatFixTopics();
   void ManageKML();
 
   private:
@@ -95,9 +95,9 @@ Q_SIGNALS:
   Ui_Form ui_;
 
   QWidget* widget_;
-  DrawableMarbleWidget* m_drawable_widget;
 
-  ros::Subscriber m_sat_nav_fix_subscriber;
+  ros::Subscriber m_current_pos_subscriber;
+  ros::Subscriber m_matched_pos_subscriber;
 
   std::map< QString, bool> m_last_kml_data;
 

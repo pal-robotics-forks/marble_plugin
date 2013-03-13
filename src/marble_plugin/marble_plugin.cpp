@@ -199,8 +199,8 @@ void MarblePlugin::ChangeMarbleModelTheme(int idx )
 
 void MarblePlugin::ChangeGPSTopic(const QString &topic_name)
 {
-    m_sat_nav_fix_subscriber.shutdown();
-    m_sat_nav_fix_subscriber = getNodeHandle().subscribe< sensor_msgs::NavSatFix >(
+    m_current_pos_subscriber.shutdown();
+    m_current_pos_subscriber = getNodeHandle().subscribe< sensor_msgs::NavSatFix >(
                 topic_name.toStdString().c_str() , 10 , &MarblePlugin::GpsCallback, this );
 }
 
@@ -236,7 +236,7 @@ void MarblePlugin::GpsCallback( const sensor_msgs::NavSatFixConstPtr& gpspt )
 void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
 {
   // save intrinsic configuration, usually using:
-    QString topic(m_sat_nav_fix_subscriber.getTopic().c_str());
+    QString topic(m_current_pos_subscriber.getTopic().c_str());
     instance_settings.setValue( "marble_plugin_topic", topic );
     instance_settings.setValue( "marble_plugin_zoom" , ui_.MarbleWidget->distance() );
     instance_settings.setValue( "marble_theme_index" , ui_.comboBox_theme->currentIndex() );
@@ -290,7 +290,7 @@ void MarblePlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, 
 void MarblePlugin::shutdownPlugin()
 {
   // unregister all publishers here
-  m_sat_nav_fix_subscriber.shutdown();
+  m_current_pos_subscriber.shutdown();
 }
 
 /*bool hasConfiguration() const
