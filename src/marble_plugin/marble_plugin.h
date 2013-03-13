@@ -22,7 +22,8 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 //----------------------------------------------------------------------
 /*!\file
 *
-* \author  Tobias Bär <baer@fzi.de> Jan Aidel <aiden@fzi.de>
+* \author  Tobias Bär <baer@fzi.de>
+*          Jan Aidel <aiden@fzi.de>
 * \date    2013-01-11
 *
 */
@@ -52,8 +53,14 @@ namespace marble_plugin {
 class MarblePlugin
   : public rqt_gui_cpp::Plugin
 {
+
+
   Q_OBJECT
+
+
 public:
+
+
   MarblePlugin();
   virtual void initPlugin(qt_gui_cpp::PluginContext& context);
   virtual void shutdownPlugin();
@@ -75,26 +82,24 @@ Q_SIGNALS:
 
   private Q_SLOTS:
 
-      void ChangeGPSTopic(const QString &topic_name);
-      void ChangeMarbleModelTheme(int idx );
-      void FindRosTopics();
-      void ManageKML();
+  void ChangeGPSTopic(const QString &topic_name);
+  void ChangeMarbleModelTheme(int idx );
+  void FindRosTopics();
+  void ManageKML();
 
   private:
 
-      void clearKMLData();
-      void addKMLData(std::map<QString, bool>& kml_files, bool overwrite);
+  void clearKMLData();
+  void addKMLData(std::map<QString, bool>& kml_files, bool overwrite);
 
   Ui_Form ui_;
 
+  QWidget* widget_;
+  DrawableMarbleWidget* m_drawable_widget;
 
+  ros::Subscriber m_sat_nav_fix_subscriber;
 
-    QWidget* widget_;
-    DrawableMarbleWidget* m_drawable_widget;
-
-    ros::Subscriber m_sat_nav_fix_subscriber;
-
-    std::map< QString, bool> m_last_kml_data;
+  std::map< QString, bool> m_last_kml_data;
 
 };
 } // namespace
