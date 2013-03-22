@@ -101,7 +101,10 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   FindNavSatFixTopics();
 
   // Connections
-  connect(ui_.comboBox, SIGNAL(activated (const QString &)), this, SLOT (ChangeGPSTopic(const QString &)));
+  connect(ui_.comboBox_current_gps, SIGNAL(activated (const QString &)), this, SLOT (ChangeGPSTopicCurrentGPS(const QString &)));
+  connect(ui_.comboBox_matched_gps, SIGNAL(activated (const QString &)), this, SLOT (ChangeGPSTopicMatchedGPS(const QString &)));
+
+
   connect(ui_.refreshButton, SIGNAL(clicked()), this, SLOT(FindNavSatFixTopics()));
   connect(ui_.manageKMLButton, SIGNAL(clicked()), this, SLOT(ManageKML()));
 
@@ -174,17 +177,18 @@ void MarblePlugin::FindNavSatFixTopics()
     getTopics(topic_infos);
 
     //GPS Topics
-    ui_.comboBox->clear();
+    ui_.comboBox_current_gps->clear();
+    ui_.comboBox_matched_gps->clear();
     for(std::vector<TopicInfo>::iterator it=topic_infos.begin(); it!=topic_infos.end();it++)
     {
         TopicInfo topic = (TopicInfo)(*it);
         if(topic.datatype.compare("sensor_msgs/NavSatFix")==0)
         {
             QString lineEdit_string(topic.name.c_str());
-            ui_.comboBox->addItem(lineEdit_string);
+            ui_.comboBox_current_gps->addItem(lineEdit_string);
+            ui_.comboBox_matched_gps->addItem(lineEdit_string);
         }
     }
-
 }
 
 
@@ -197,17 +201,40 @@ void MarblePlugin::ChangeMarbleModelTheme(int idx )
     ui_.MarbleWidget->setMapThemeId( theme );
 }
 
-void MarblePlugin::ChangeGPSTopic(const QString &topic_name)
+void MarblePlugin::ChangeGPSTopicCurrentGPS(const QString &topic_name)
 {
     m_current_pos_subscriber.shutdown();
     m_current_pos_subscriber = getNodeHandle().subscribe< sensor_msgs::NavSatFix >(
-                topic_name.toStdString().c_str() , 10 , &MarblePlugin::GpsCallback, this );
+                topic_name.toStdString().c_str() , 1 , &MarblePlugin::GpsCallbackCurrent, this );
+
+    int idx = ui_.comboBox_current_gps->findText( topic_name );
+    if( idx != -1 )
+    {
+        ui_.comboBox_current_gps->setCurrentIndex( idx );
+    }
 }
 
-void MarblePlugin::GpsCallback( const sensor_msgs::NavSatFixConstPtr& gpspt )
+void MarblePlugin::ChangeGPSTopicMatchedGPS(const QString &topic_name)
 {
-    // std::cout << "GPS Callback " << gpspt->longitude << " " << gpspt->latitude << std::endl;
+    m_matched_pos_subscriber.shutdown();
+    m_matched_pos_subscriber = getNodeHandle().subscribe< sensor_msgs::NavSatFix >(
+                topic_name.toStdString().c_str() , 1 , &MarblePlugin::GpsCallbackMatched, this );
+
+    int idx = ui_.comboBox_matched_gps->findText( topic_name );
+    if( idx != -1 )
+    {
+        ui_.comboBox_matched_gps->setCurrentIndex( idx );
+    }
+
+}
+
+void MarblePlugin::GpsCallbackMatched( const sensor_msgs::NavSatFixConstPtr& gpspt )
+{
+    // std::cout << "GPS Callback Matched " << gpspt->longitude << " " << gpspt->latitude << std::endl;
     assert( widget_ );
+
+    GeoDataCoordinates postition(gpspt->longitude, gpspt->latitude, gpspt->altitude, GeoDataCoordinates::Degree);
+    ui_.MarbleWidget->setMatchedPosition(postition);
 
     // Emit NewGPSPosition only, if it changes significantly. Has to be somehow related to the zoom
     static qreal _x = -1;
@@ -226,18 +253,31 @@ void MarblePlugin::GpsCallback( const sensor_msgs::NavSatFixConstPtr& gpspt )
 
     if( recenter )
     {
-        emit NewGPSPosition( gpspt->longitude , gpspt->latitude );
         ui_.MarbleWidget->screenCoordinates(gpspt->longitude,gpspt->latitude , _x , _y );
-        GeoDataCoordinates postition(gpspt->longitude, gpspt->latitude, gpspt->altitude, GeoDataCoordinates::Degree);
-        ui_.MarbleWidget->receiveLastPosition(postition);
+        emit NewGPSPosition( gpspt->longitude , gpspt->latitude );
     }
+}
+
+void MarblePlugin::GpsCallbackCurrent( const sensor_msgs::NavSatFixConstPtr& gpspt )
+{
+    // std::cout << "GPS Callback Current " << gpspt->longitude << " " << gpspt->latitude << std::endl;
+    assert( widget_ );
+
+    GeoDataCoordinates postition(gpspt->longitude, gpspt->latitude, gpspt->altitude, GeoDataCoordinates::Degree);
+    ui_.MarbleWidget->setCurrentPosition(postition);
+
+    // @TODO: Marble Widget does not repaint
 }
 
 void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
 {
   // save intrinsic configuration, usually using:
     QString topic(m_current_pos_subscriber.getTopic().c_str());
-    instance_settings.setValue( "marble_plugin_topic", topic );
+    instance_settings.setValue( "marble_plugin_topic_current", topic );
+
+    topic = QString(m_matched_pos_subscriber.getTopic().c_str());
+    instance_settings.setValue( "marble_plugin_topic_matched", topic );
+
     instance_settings.setValue( "marble_plugin_zoom" , ui_.MarbleWidget->distance() );
     instance_settings.setValue( "marble_theme_index" , ui_.comboBox_theme->currentIndex() );
     instance_settings.setValue( "marble_center" , ui_.checkBox_center->isChecked() );
@@ -262,8 +302,11 @@ void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cp
 void MarblePlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings)
 {
   // restore intrinsic configuration, usually using:
-    const QString topic = instance_settings.value("marble_plugin_topic").toString();
-    ChangeGPSTopic(topic);
+    const QString topic_current = instance_settings.value("marble_plugin_topic_current").toString();
+    ChangeGPSTopicCurrentGPS(topic_current);
+
+    const QString topic_matched = instance_settings.value("marble_plugin_topic_matched").toString();
+    ChangeGPSTopicMatchedGPS(topic_matched);
 
     ui_.comboBox_theme->setCurrentIndex( instance_settings.value( "marble_theme_index" , 0 ).toInt() );
     ui_.checkBox_center->setChecked( instance_settings.value( "marble_center" , true ).toBool());
@@ -291,6 +334,7 @@ void MarblePlugin::shutdownPlugin()
 {
   // unregister all publishers here
   m_current_pos_subscriber.shutdown();
+  m_matched_pos_subscriber.shutdown();
 }
 
 /*bool hasConfiguration() const

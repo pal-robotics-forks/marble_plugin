@@ -48,9 +48,9 @@ class DrawableMarbleWidget : public MarbleWidget
   public:
 
     DrawableMarbleWidget(QWidget *parent=0);
-    void receiveLastPosition(GeoDataCoordinates& postion);
 
-    
+    void setCurrentPosition( GeoDataCoordinates& postion );
+    void setMatchedPosition( GeoDataCoordinates& postion );
 
 protected:
     virtual void customPaint(GeoPainter *painter);
@@ -60,21 +60,16 @@ protected:
     QImage roateCar(QImage* car_image);
 
     void loadImage(QImage& car, std::string& path );
-    double dist(double x1, double x2, double y1, double y2);
     bool posChanged(double x1, double y1, double x2, double y2, double threshold);
 
-    bool showAsPoint(double x1, double y1, double x2, double y2);
-    bool showAsArrow(double x1, double y1, double x2, double y2);
-
-    GeoDataCoordinates m_actual_position;
-    GeoDataCoordinates m_last_position;
-    double m_last_angle_grad;
-    double m_actual_angle_grad;
-    QImage* m_car;
     QImage m_arrow;
-    QImage m_point;
+    QImage m_current_pos_icon;
+    QImage m_matched;
 
-    
+    GeoDataCoordinates m_current_pos;
+    GeoDataCoordinates m_matched_pos;
+    GeoDataCoordinates m_last_matched_position;
+
   private:
 
     Q_DISABLE_COPY(DrawableMarbleWidget);

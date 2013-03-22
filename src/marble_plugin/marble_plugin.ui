@@ -34,7 +34,7 @@
         </size>
        </property>
        <property name="text">
-        <string>GPS Topic</string>
+        <string>GPS Topic(s)</string>
        </property>
       </widget>
      </item>
@@ -67,9 +67,6 @@
      <item row="4" column="1">
       <widget class="QComboBox" name="comboBox_theme"/>
      </item>
-     <item row="2" column="1" colspan="3">
-      <widget class="QComboBox" name="comboBox"/>
-     </item>
      <item row="4" column="2">
       <widget class="QCheckBox" name="checkBox_center">
        <property name="text">
@@ -92,6 +89,12 @@
         <string>Manage KML FIles</string>
        </property>
       </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="comboBox_current_gps"/>
+     </item>
+     <item row="2" column="2">
+      <widget class="QComboBox" name="comboBox_matched_gps"/>
      </item>
     </layout>
    </item>

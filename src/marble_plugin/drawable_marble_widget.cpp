@@ -8,22 +8,26 @@ namespace marble_plugin {
 
 
 DrawableMarbleWidget::DrawableMarbleWidget(QWidget *parent)
-  : MarbleWidget(parent)
+    : MarbleWidget(parent),
+      m_current_pos(M_PI_2,M_PI_2),
+      m_matched_pos(M_PI_2,M_PI_2)
 {
-    std::string path = ros::package::getPath("marble_plugin")+"/etc/arrow.png";
+    std::string path;
+    path = ros::package::getPath("marble_plugin")+"/etc/arrow.png";
     loadImage(m_arrow, path);
 
-    path = ros::package::getPath("marble_plugin")+"/etc/point.png";
-    loadImage(m_point, path);
+    path = ros::package::getPath("marble_plugin")+"/etc/sattelite.png";
+    loadImage(m_current_pos_icon, path);
 
-    m_car = &m_arrow;
+    path = ros::package::getPath("marble_plugin")+"/etc/matched.png";
+    loadImage(m_matched, path);
 }
 
-void DrawableMarbleWidget::loadImage(QImage& car, std::string& path )
+void DrawableMarbleWidget::loadImage( QImage& icon , std::string& path )
 {
     QString qpath(path.c_str());
     QImage image(qpath);
-    car = image;
+    icon = image;
 }
 
 
@@ -31,82 +35,62 @@ void DrawableMarbleWidget::customPaint(Marble::GeoPainter *painter)
 {
    MarbleWidget::customPaint( painter );
 
-   painter->drawImage(m_actual_position, roateCar(m_car));
+   // @TODO: Check if both points are available
+
+   if( ! m_current_pos.isPole() )
+   {
+       painter->drawImage( m_current_pos , m_current_pos_icon );
+   }
+
+   if( ! m_matched_pos.isPole() )
+   {
+       painter->drawImage( m_matched_pos , roateCar( &m_arrow ) );
+   }
+
+   if( ! ( m_current_pos.isPole() || m_matched_pos.isPole() ) )
+   {
+       painter->save();
+       painter->setPen( QPen(Qt::red  , 2 ) );
+       painter->drawLine( m_matched_pos , m_current_pos );
+       painter->restore();
+   }
 }
 
-void DrawableMarbleWidget::receiveLastPosition(GeoDataCoordinates &postion)
+void DrawableMarbleWidget::setMatchedPosition( GeoDataCoordinates &postion )
 {
-    m_last_position = m_actual_position;
-    m_actual_position = postion;
-
+    m_last_matched_position = m_matched_pos;
+    m_matched_pos = postion;
 }
+
+void DrawableMarbleWidget::setCurrentPosition( GeoDataCoordinates &postion )
+{
+    m_current_pos = postion;
+}
+
 
 QImage DrawableMarbleWidget::roateCar(QImage *car_image)
 {
+    double x1 = m_last_matched_position.latitude(GeoDataCoordinates::Radian);
+    double x2 = m_matched_pos.latitude(GeoDataCoordinates::Radian);
 
-    //we can do this because of really smal changes between last and actual position
-    double x1 = m_last_position.latitude(GeoDataCoordinates::Radian);
-    double x2 = m_actual_position.latitude(GeoDataCoordinates::Radian);
+    double y1 = m_last_matched_position.longitude(GeoDataCoordinates::Radian);
+    double y2 = m_matched_pos.longitude(GeoDataCoordinates::Radian);
 
-    double y1 = m_last_position.longitude(GeoDataCoordinates::Radian);
-    double y2 = m_actual_position.longitude(GeoDataCoordinates::Radian);
-
-//    std::cout << "x1 " << x1 << " y1 " << y1 << std::endl;
-//    std::cout << "x2 " << x2 << " y2 " << y2 << std::endl;
-//    std::cout << "------------------------------" << std::endl;
-
-    double alpha;
-
-    if(posChanged(x1,y1,x2,y2, 1.0e-9))
+    static double alpha = atan2( y2 - y1 , x2 - x1 ) * 180 * M_1_PI;
+    if(posChanged( x1 , y1 , x2 , y2 ,  1.0e-9 ) )
     {
-        alpha = atan2(y2-y1,x2-x1)*180*M_1_PI;
-        m_last_angle_grad = alpha;
-    }
-    else
-    {
-        alpha = m_last_angle_grad;
+        alpha = atan2( y2 - y1 , x2 - x1 ) * 180 * M_1_PI;
     }
 
-
-
-    if(showAsArrow(x1,y1,x2,y2))
-    {
-        car_image = &m_arrow;
-    }
-    else if(showAsPoint(x1,y1,x2,y2))
-    {
-        car_image = &m_point;
-    }
-
-//    std::cout << " alpha " << alpha << " last angle " << m_last_angle_grad << std::endl;
-//    std::cout << "------------------------------" << std::endl;
-
-    QTransform rotaion;
-    rotaion.rotate(alpha);
-    return car_image->transformed(rotaion);
+    QTransform rotation;
+    rotation.rotate( alpha );
+    return car_image->transformed( rotation );
 }
 
 bool DrawableMarbleWidget::posChanged(double x1, double y1, double x2, double y2, double threshold)
 {
     double diff = std::abs(std::max(x1-x2, y1-y2));
-    std::cout << "diff " << diff << std::endl;
     return  diff > threshold;
-}
-
-bool DrawableMarbleWidget::showAsArrow(double x1, double y1, double x2, double y2)
-{
-    return posChanged(x1,y1,x2,y2, 1.0e-8);
-}
-
-bool DrawableMarbleWidget::showAsPoint(double x1, double y1, double x2, double y2)
-{
-    return posChanged(x1,y1,x2,y2, 1.0e-11);
-}
-
-
-double DrawableMarbleWidget::dist(double x1, double x2, double y1, double y2)
-{
-    return sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
 }
 
 }

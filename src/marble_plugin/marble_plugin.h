@@ -71,8 +71,8 @@ public:
   //bool hasConfiguration() const;
   //void triggerConfiguration();
 
-  void GpsCallback( const sensor_msgs::NavSatFixConstPtr& gpspt );
-
+  void GpsCallbackCurrent( const sensor_msgs::NavSatFixConstPtr& gpspt );
+  void GpsCallbackMatched( const sensor_msgs::NavSatFixConstPtr& gpspt );
 
 private:
 
@@ -82,9 +82,12 @@ Q_SIGNALS:
 
   private Q_SLOTS:
 
-  void ChangeGPSTopic(const QString &topic_name);
+  void ChangeGPSTopicCurrentGPS(const QString &topic_name);
+  void ChangeGPSTopicMatchedGPS(const QString &topic_name);
+
   void ChangeMarbleModelTheme(int idx );
   void FindNavSatFixTopics();
+
   void ManageKML();
 
   private:
