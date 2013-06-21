@@ -74,6 +74,9 @@ public:
   void GpsCallbackCurrent( const sensor_msgs::NavSatFixConstPtr& gpspt );
   void GpsCallbackMatched( const sensor_msgs::NavSatFixConstPtr& gpspt );
 
+private slots:
+  void gpsCoordinateSelected(qreal lon, qreal lat, GeoDataCoordinates::Unit unit);
+
 private:
 
 Q_SIGNALS:
@@ -101,6 +104,7 @@ Q_SIGNALS:
 
   ros::Subscriber m_current_pos_subscriber;
   ros::Subscriber m_matched_pos_subscriber;
+  ros::Publisher m_selected_gps_pos_publisher;
 
   std::map< QString, bool> m_last_kml_data;
 

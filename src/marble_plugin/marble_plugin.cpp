@@ -97,6 +97,8 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   refresh_icon.addFile(icon_path);
   ui_.refreshButton->setIcon(refresh_icon);
 
+  //setup the ros publisher for publishing the selected gps position
+  m_selected_gps_pos_publisher = getNodeHandle().advertise< sensor_msgs::NavSatFix >("gps_position", 10);
 
   FindNavSatFixTopics();
 
@@ -110,6 +112,8 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
   connect( this , SIGNAL(NewGPSPosition(qreal,qreal)) , ui_.MarbleWidget , SLOT(centerOn(qreal,qreal)) );
   connect( ui_.comboBox_theme , SIGNAL(currentIndexChanged(int)) , this , SLOT(ChangeMarbleModelTheme(int)));
+
+  connect( ui_.MarbleWidget, SIGNAL(mouseClickGeoPosition(qreal,qreal,GeoDataCoordinates::Unit)), this, SLOT(gpsCoordinateSelected(qreal,qreal,GeoDataCoordinates::Unit)));
 
   // AutoNavigation Connections ... soon
   /*
@@ -267,6 +271,16 @@ void MarblePlugin::GpsCallbackCurrent( const sensor_msgs::NavSatFixConstPtr& gps
     ui_.MarbleWidget->setCurrentPosition(postition);
 
     // @TODO: Marble Widget does not repaint
+}
+
+void MarblePlugin::gpsCoordinateSelected(qreal lon, qreal lat, GeoDataCoordinates::Unit unit) {
+  GeoDataCoordinates coords(lon, lat, unit);
+
+  sensor_msgs::NavSatFix msg;
+  msg.longitude = coords.longitude(GeoDataCoordinates::Degree);
+  msg.latitude = coords.latitude(GeoDataCoordinates::Degree);
+
+  m_selected_gps_pos_publisher.publish(msg);
 }
 
 void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
