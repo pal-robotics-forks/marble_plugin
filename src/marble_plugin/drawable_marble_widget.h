@@ -36,6 +36,10 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #include "marble/MarbleWidget.h"
 #include "marble/GeoPainter.h"
 
+#include <QList>
+#include <QPolygonF>
+
+#include <visualization_msgs/Marker.h>
 
 using namespace Marble;
 
@@ -44,36 +48,35 @@ namespace marble_plugin {
 class DrawableMarbleWidget : public MarbleWidget
 {
   Q_OBJECT
-  
-  public:
 
-    DrawableMarbleWidget(QWidget *parent=0);
+public:
+  DrawableMarbleWidget(QWidget *parent=0);
 
-    void setCurrentPosition( GeoDataCoordinates& postion );
-    void setMatchedPosition( GeoDataCoordinates& postion );
+  void setCurrentPosition( GeoDataCoordinates& postion );
+  void setMatchedPosition( GeoDataCoordinates& postion );
+
+  void visualizationCallback(const visualization_msgs::Marker& marker);
 
 protected:
-    virtual void customPaint(GeoPainter *painter);
+  virtual void customPaint(GeoPainter *painter);
 
-  private:
+private:
+  QImage roateCar(QImage* car_image);
 
-    QImage roateCar(QImage* car_image);
+  void loadImage(QImage& car, std::string& path );
+  bool posChanged(double x1, double y1, double x2, double y2, double threshold);
 
-    void loadImage(QImage& car, std::string& path );
-    bool posChanged(double x1, double y1, double x2, double y2, double threshold);
+  QImage m_arrow;
+  QImage m_current_pos_icon;
+  QImage m_matched;
 
-    QImage m_arrow;
-    QImage m_current_pos_icon;
-    QImage m_matched;
+  QList<QPolygonF> lines;
 
-    GeoDataCoordinates m_current_pos;
-    GeoDataCoordinates m_matched_pos;
-    GeoDataCoordinates m_last_matched_position;
+  GeoDataCoordinates m_current_pos;
+  GeoDataCoordinates m_matched_pos;
+  GeoDataCoordinates m_last_matched_position;
 
-  private:
-
-    Q_DISABLE_COPY(DrawableMarbleWidget);
-
+  Q_DISABLE_COPY(DrawableMarbleWidget);
 };
 
 }

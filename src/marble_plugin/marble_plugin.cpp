@@ -101,7 +101,10 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   ui_.refreshButton->setIcon(refresh_icon);
 
   //setup the ros publisher for publishing the selected gps position
-  m_selected_gps_pos_publisher = getNodeHandle().advertise< sensor_msgs::NavSatFix >("gps_position", 10);
+  m_selected_gps_pos_publisher = getNodeHandle().advertise< sensor_msgs::NavSatFix >("gps_position", 1);
+
+  //subscribe to the visualization topic
+  m_visualization_subscriber = getNodeHandle().subscribe("visualization", 1000, &DrawableMarbleWidget::visualizationCallback, ui_.MarbleWidget);
 
   m_mapcontrol_subscriber = getNodeHandle().subscribe< geometry_msgs::Twist >( "/mapcontrol" , 1 , &MarblePlugin::mapcontrolCallback, this );
 

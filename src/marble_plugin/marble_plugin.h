@@ -110,6 +110,7 @@ Q_SIGNALS:
 
   ros::Subscriber m_current_pos_subscriber;
   ros::Subscriber m_matched_pos_subscriber;
+  ros::Subscriber m_visualization_subscriber;
   ros::Publisher m_selected_gps_pos_publisher;
 
   ros::Subscriber m_mapcontrol_subscriber;
