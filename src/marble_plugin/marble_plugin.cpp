@@ -44,6 +44,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 // ROS Plugin Includes
 #include <pluginlib/class_list_macros.h>
 
+
 // Marble Includes
 #include <marble/MarbleWidget.h>
 #include <marble/MarbleModel.h>
@@ -74,6 +75,8 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 {
   // access standalone command line arguments
   QStringList argv = context.argv();
+  qRegisterMetaType<FlyToMode>( "FlyToMode" );
+  qRegisterMetaType<GeoDataLookAt>( "GeoDataLookAt" );
 
   // create QWidget
   widget_ = new QWidget();
@@ -100,6 +103,8 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   //setup the ros publisher for publishing the selected gps position
   m_selected_gps_pos_publisher = getNodeHandle().advertise< sensor_msgs::NavSatFix >("gps_position", 10);
 
+  m_mapcontrol_subscriber = getNodeHandle().subscribe< geometry_msgs::Twist >( "/mapcontrol" , 1 , &MarblePlugin::mapcontrolCallback, this );
+
   FindNavSatFixTopics();
 
   // Connections
@@ -111,6 +116,11 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   connect(ui_.manageKMLButton, SIGNAL(clicked()), this, SLOT(ManageKML()));
 
   connect( this , SIGNAL(NewGPSPosition(qreal,qreal)) , ui_.MarbleWidget , SLOT(centerOn(qreal,qreal)) );
+
+  connect(this, SIGNAL(ZoomIn(FlyToMode)), ui_.MarbleWidget, SLOT(zoomIn(FlyToMode)));
+  connect(this, SIGNAL(ZoomOut(FlyToMode)), ui_.MarbleWidget, SLOT(zoomOut(FlyToMode)));
+  connect(this, SIGNAL(flyTo(GeoDataLookAt,FlyToMode)), ui_.MarbleWidget, SLOT(flyTo(GeoDataLookAt,FlyToMode)));
+
   connect( ui_.comboBox_theme , SIGNAL(currentIndexChanged(int)) , this , SLOT(ChangeMarbleModelTheme(int)));
 
   connect( ui_.MarbleWidget, SIGNAL(mouseClickGeoPosition(qreal,qreal,GeoDataCoordinates::Unit)), this, SLOT(gpsCoordinateSelected(qreal,qreal,GeoDataCoordinates::Unit)));
@@ -160,6 +170,39 @@ void MarblePlugin::addKMLData(std::map< QString, bool>& kml_files, bool overwrit
         }
         m_last_kml_data[filepath] = show;
     }
+}
+
+void MarblePlugin::mapcontrolCallback(const geometry_msgs::TwistConstPtr &msg)
+{
+    FlyToMode mode;
+    mode = Linear;
+
+    GeoDataLookAt lookAt;
+    lookAt = ui_.MarbleWidget->lookAt();
+
+    double lon = lookAt.longitude();
+    double lat = lookAt.latitude();
+
+    double muted_move_step = 0.025 * ui_.MarbleWidget->moveStep();
+    float step_lon = muted_move_step * std::max(std::min(msg->linear.x, 1.0), -1.0);
+    float step_lat = muted_move_step * std::max(std::min(msg->linear.y, 1.0), -1.0);
+
+    lon+=step_lon;
+    lat+=step_lat;
+
+    if(lon!=lookAt.longitude() || lat!=lookAt.latitude())
+    {
+        lookAt.setLatitude(lat);
+        lookAt.setLongitude(lon);
+
+        emit flyTo(lookAt, mode);
+    }
+
+    if(msg->linear.z < 0)
+        emit ZoomIn(mode);
+    if(msg->linear.z > 0)
+        emit ZoomOut(mode);
+
 }
 
 void MarblePlugin::clearKMLData()
@@ -350,6 +393,7 @@ void MarblePlugin::shutdownPlugin()
   m_current_pos_subscriber.shutdown();
   m_matched_pos_subscriber.shutdown();
   m_selected_gps_pos_publisher.shutdown();
+  m_mapcontrol_subscriber.shutdown();
 }
 
 /*bool hasConfiguration() const

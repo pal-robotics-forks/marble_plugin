@@ -38,6 +38,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 // Message Includes
 #include <sensor_msgs/NavSatFix.h>
+#include <geometry_msgs/Twist.h>
 
 // Qt Includes
 #include <QtCore/QObject>
@@ -83,6 +84,10 @@ Q_SIGNALS:
 
   void NewGPSPosition(qreal,qreal);
 
+  void ZoomIn(FlyToMode);
+  void ZoomOut(FlyToMode);
+  void flyTo(GeoDataLookAt, FlyToMode);
+
   private Q_SLOTS:
 
   void ChangeGPSTopicCurrentGPS(const QString &topic_name);
@@ -97,6 +102,7 @@ Q_SIGNALS:
 
   void clearKMLData();
   void addKMLData(std::map<QString, bool>& kml_files, bool overwrite);
+  void mapcontrolCallback(const geometry_msgs::TwistConstPtr &msg);
 
   Ui_Form ui_;
 
@@ -105,6 +111,8 @@ Q_SIGNALS:
   ros::Subscriber m_current_pos_subscriber;
   ros::Subscriber m_matched_pos_subscriber;
   ros::Publisher m_selected_gps_pos_publisher;
+
+  ros::Subscriber m_mapcontrol_subscriber;
 
   std::map< QString, bool> m_last_kml_data;
 
