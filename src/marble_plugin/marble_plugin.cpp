@@ -349,6 +349,7 @@ void MarblePlugin::shutdownPlugin()
   // unregister all publishers here
   m_current_pos_subscriber.shutdown();
   m_matched_pos_subscriber.shutdown();
+  m_selected_gps_pos_publisher.shutdown();
 }
 
 /*bool hasConfiguration() const
