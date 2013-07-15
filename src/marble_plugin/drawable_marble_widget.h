@@ -39,6 +39,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 #include <QList>
 #include <QPolygonF>
+#include <QQueue>
 
 #include <visualization_msgs/Marker.h>
 
@@ -68,7 +69,7 @@ private:
   bool posChanged(double x1, double y1, double x2, double y2, double threshold);
   std::pair<double, double> toGpsCoordinates(double x, double y);
 
-  /*! Get absolute coordinates of a given position to a reference position */
+  /*! Get absolute coordinates in DEGREE of a given position to a reference position */
   std::pair<double, double> GetAbsoluteCoordinates( double x , double y , double ref_lat , double ref_lon, double ref_bearing = 0. );
   std::pair<double, double> GetNewPointBearingDistance(double a_lat, double a_lon, double bearing, double distance);
 
@@ -76,7 +77,7 @@ private:
   QImage m_current_pos_icon;
   QImage m_matched;
 
-  QList<QPolygonF> m_lines;
+  QQueue<GeoDataLineString> m_marker_line;
 
   GeoDataCoordinates m_current_pos;
   GeoDataCoordinates m_matched_pos;

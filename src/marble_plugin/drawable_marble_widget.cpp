@@ -54,9 +54,10 @@ void DrawableMarbleWidget::customPaint(Marble::GeoPainter *painter)
     painter->restore();
   }
 
-  painter->setPen(QPen(Qt::blue, 5));
-  foreach (QPolygonF polygon, m_lines) {
-    painter->drawPolyline(polygon);
+  painter->setPen(QPen(Qt::blue, 2));
+  // Polygon of QPointF doesn't work here, because this is interpreted as screen coordinates
+  foreach (GeoDataLineString line, m_marker_line) {
+    painter->drawPolyline(line);
   }
 }
 
@@ -99,8 +100,8 @@ bool DrawableMarbleWidget::posChanged(double x1, double y1, double x2, double y2
 std::pair<double, double> DrawableMarbleWidget::toGpsCoordinates(double x, double y)
 {
   //Schlossplatz. TODO: get it from bag file
-  double ref_lat = 49.011472;
-  double ref_lon = 8.404495;
+  double ref_lat = 49.015515;
+  double ref_lon = 8.387508;
 
   return GetAbsoluteCoordinates(x, y, ref_lat, ref_lon);
 }
@@ -112,19 +113,28 @@ void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::Marke
   {
     //read out points and create a line
     QPolygonF polygon;
+    GeoDataLineString geo_polygon;
     for (size_t i=0; i<marker->points.size(); i++) {
-      QPointF point;
+//      QPointF point;
       std::pair<double, double> coords = toGpsCoordinates(marker->points.at(i).x, marker->points.at(i).y);
-      point.setX(coords.first);
-      point.setY(coords.second);
 
-      polygon.push_back(point);
-    }
+
+      GeoDataCoordinates geo_coords;
+      geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
+      geo_polygon.append(geo_coords);
+   }
 
     //save the Line
-    if (!m_lines.contains(polygon)) {
-      m_lines.append(polygon);
-    }
+//    if (!m_lines.contains(polygon)) {
+//      m_lines.append(polygon);
+//    }
+    std::cout << geo_polygon.size() << " marker line " << m_marker_line.size() << std::endl;
+    m_marker_line.enqueue(geo_polygon);
+
+//    if(m_marker_line.size() > 100 )
+//    {
+//      m_marker_line.dequeue();
+//    }
 
     break;
   }
@@ -134,6 +144,7 @@ void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::Marke
 }
 
 // --- From Gps Tools
+
 std::pair<double, double> DrawableMarbleWidget::GetAbsoluteCoordinates( double x , double y , double ref_lat , double ref_lon, double ref_bearing)
 {
   double d = sqrt(x*x+y*y);
