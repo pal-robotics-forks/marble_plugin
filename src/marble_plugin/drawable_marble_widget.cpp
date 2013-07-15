@@ -100,8 +100,8 @@ bool DrawableMarbleWidget::posChanged(double x1, double y1, double x2, double y2
 std::pair<double, double> DrawableMarbleWidget::toGpsCoordinates(double x, double y)
 {
   //Schlossplatz. TODO: get it from bag file
-  double ref_lat = 49.015515;
-  double ref_lon = 8.387508;
+  double ref_lat = 49.021267;
+  double ref_lon = 8.3983866;
 
   return GetAbsoluteCoordinates(x, y, ref_lat, ref_lon);
 }
@@ -111,30 +111,25 @@ void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::Marke
   switch (marker->type) {
   case visualization_msgs::Marker::LINE_STRIP:
   {
-    //read out points and create a line
-    QPolygonF polygon;
-    GeoDataLineString geo_polygon;
-    for (size_t i=0; i<marker->points.size(); i++) {
-//      QPointF point;
-      std::pair<double, double> coords = toGpsCoordinates(marker->points.at(i).x, marker->points.at(i).y);
+    if(marker->ns == "object_track_line_filtered" || marker->ns == "track_driven_line")
+    {
+      //read out points and create a line
+      GeoDataLineString geo_polygon;
+      for (size_t i=0; i<marker->points.size(); i++) {
+        std::pair<double, double> coords = toGpsCoordinates(marker->points.at(i).x, marker->points.at(i).y);
 
+        GeoDataCoordinates geo_coords;
+        geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
+        geo_polygon.append(geo_coords);
+     }
 
-      GeoDataCoordinates geo_coords;
-      geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
-      geo_polygon.append(geo_coords);
-   }
+      m_marker_line.enqueue(geo_polygon);
 
-    //save the Line
-//    if (!m_lines.contains(polygon)) {
-//      m_lines.append(polygon);
-//    }
-    std::cout << geo_polygon.size() << " marker line " << m_marker_line.size() << std::endl;
-    m_marker_line.enqueue(geo_polygon);
-
-//    if(m_marker_line.size() > 100 )
-//    {
-//      m_marker_line.dequeue();
-//    }
+      if(m_marker_line.size() > 100 )
+      {
+        m_marker_line.dequeue();
+      }
+    }
 
     break;
   }
