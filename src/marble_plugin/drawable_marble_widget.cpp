@@ -4,7 +4,7 @@
 #include "iostream"
 #include "math.h"
 
-namespace marble_plugin {
+using namespace marble_plugin;
 
 
 DrawableMarbleWidget::DrawableMarbleWidget(QWidget *parent)
@@ -55,7 +55,7 @@ void DrawableMarbleWidget::customPaint(Marble::GeoPainter *painter)
   }
 
   painter->setPen(QPen(Qt::blue, 5));
-  foreach (QPolygonF polygon, lines) {
+  foreach (QPolygonF polygon, m_lines) {
     painter->drawPolyline(polygon);
   }
 }
@@ -70,7 +70,6 @@ void DrawableMarbleWidget::setCurrentPosition( GeoDataCoordinates &postion )
 {
   m_current_pos = postion;
 }
-
 
 QImage DrawableMarbleWidget::roateCar(QImage *car_image)
 {
@@ -97,25 +96,65 @@ bool DrawableMarbleWidget::posChanged(double x1, double y1, double x2, double y2
   return  diff > threshold;
 }
 
-void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::Marker &marker) {
+std::pair<double, double> DrawableMarbleWidget::toGpsCoordinates(double x, double y)
+{
+  //Schlossplatz. TODO: get it from bag file
+  double ref_lat = 49.011472;
+  double ref_lon = 8.404495;
+
+  return GetAbsoluteCoordinates(x, y, ref_lat, ref_lon);
+}
+
+void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::MarkerConstPtr &marker) {
   //save the marker in the right data structure, so customPaint() can use it to paint
-  switch (marker.type) {
+  switch (marker->type) {
   case visualization_msgs::Marker::LINE_STRIP:
   {
     //read out points and create a line
     QPolygonF polygon;
-    for (size_t i=0; i<marker.points.size(); i++) {
-      polygon << QPointF(marker.points.at(i).x, marker.points.at(i).y);
+    for (size_t i=0; i<marker->points.size(); i++) {
+      QPointF point;
+      std::pair<double, double> coords = toGpsCoordinates(marker->points.at(i).x, marker->points.at(i).y);
+      point.setX(coords.first);
+      point.setY(coords.second);
+
+      polygon.push_back(point);
     }
+
     //save the Line
-    if (!lines.contains(polygon)) {
-      lines.append(polygon);
+    if (!m_lines.contains(polygon)) {
+      m_lines.append(polygon);
     }
+
     break;
   }
   case visualization_msgs::Marker::CUBE:
     break;
   }
 }
+
+// --- From Gps Tools
+std::pair<double, double> DrawableMarbleWidget::GetAbsoluteCoordinates( double x , double y , double ref_lat , double ref_lon, double ref_bearing)
+{
+  double d = sqrt(x*x+y*y);
+  double bearing = atan2(x,y) + ref_bearing;
+
+  return GetNewPointBearingDistance(ref_lat, ref_lon, bearing, d);
+}
+
+std::pair<double, double> DrawableMarbleWidget::GetNewPointBearingDistance(double a_lat, double a_lon, double bearing, double distance)
+{
+  const double R = 6371000; //Earth radius in m
+
+  a_lat = a_lat /180 * M_PI;
+  a_lon = a_lon /180 * M_PI;
+
+  double b_lat = asin( sin(a_lat)*cos(distance/R) + cos(a_lat)*sin(distance/R)*cos(bearing) );
+  double b_lon = a_lon + atan2(sin(bearing)*sin(distance/R)*cos(a_lat), cos(distance/R)-sin(a_lat)*sin(b_lat));
+
+  b_lat = b_lat * 180 / M_PI;
+  b_lon = b_lon * 180 / M_PI;
+
+  return std::make_pair(b_lat, b_lon);
 
 }

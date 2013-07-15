@@ -35,6 +35,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 #include "marble/MarbleWidget.h"
 #include "marble/GeoPainter.h"
+#include "marble/GeoDataLineString.h"
 
 #include <QList>
 #include <QPolygonF>
@@ -55,7 +56,7 @@ public:
   void setCurrentPosition( GeoDataCoordinates& postion );
   void setMatchedPosition( GeoDataCoordinates& postion );
 
-  void visualizationCallback(const visualization_msgs::Marker& marker);
+  void visualizationCallback(const visualization_msgs::MarkerConstPtr &marker);
 
 protected:
   virtual void customPaint(GeoPainter *painter);
@@ -65,12 +66,17 @@ private:
 
   void loadImage(QImage& car, std::string& path );
   bool posChanged(double x1, double y1, double x2, double y2, double threshold);
+  std::pair<double, double> toGpsCoordinates(double x, double y);
+
+  /*! Get absolute coordinates of a given position to a reference position */
+  std::pair<double, double> GetAbsoluteCoordinates( double x , double y , double ref_lat , double ref_lon, double ref_bearing = 0. );
+  std::pair<double, double> GetNewPointBearingDistance(double a_lat, double a_lon, double bearing, double distance);
 
   QImage m_arrow;
   QImage m_current_pos_icon;
   QImage m_matched;
 
-  QList<QPolygonF> lines;
+  QList<QPolygonF> m_lines;
 
   GeoDataCoordinates m_current_pos;
   GeoDataCoordinates m_matched_pos;
