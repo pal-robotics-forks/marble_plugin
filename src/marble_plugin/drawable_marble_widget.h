@@ -42,6 +42,8 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #include <QQueue>
 
 #include <visualization_msgs/Marker.h>
+#include <sensor_msgs/NavSatFix.h>
+#include <std_msgs/ColorRGBA.h>
 
 using namespace Marble;
 
@@ -58,6 +60,7 @@ public:
   void setMatchedPosition( GeoDataCoordinates& postion );
 
   void visualizationCallback(const visualization_msgs::MarkerConstPtr &marker);
+  void referenceGpsCallback(const sensor_msgs::NavSatFixConstPtr &reference);
 
 protected:
   virtual void customPaint(GeoPainter *painter);
@@ -77,11 +80,18 @@ private:
   QImage m_current_pos_icon;
   QImage m_matched;
 
+
   QQueue<GeoDataLineString> m_marker_line;
+  QQueue<std_msgs::ColorRGBA> m_colors;
 
   GeoDataCoordinates m_current_pos;
   GeoDataCoordinates m_matched_pos;
   GeoDataCoordinates m_last_matched_position;
+
+
+  double m_ref_lat;
+  double m_ref_lon;
+
 
   Q_DISABLE_COPY(DrawableMarbleWidget);
 };

@@ -10,7 +10,9 @@ using namespace marble_plugin;
 DrawableMarbleWidget::DrawableMarbleWidget(QWidget *parent)
   : MarbleWidget(parent),
     m_current_pos(M_PI_2,M_PI_2),
-    m_matched_pos(M_PI_2,M_PI_2)
+    m_matched_pos(M_PI_2,M_PI_2),
+    m_ref_lat(49.021267),
+    m_ref_lon(8.3983866)
 {
   std::string path;
   path = ros::package::getPath("marble_plugin")+"/etc/arrow.png";
@@ -56,8 +58,32 @@ void DrawableMarbleWidget::customPaint(Marble::GeoPainter *painter)
 
   painter->setPen(QPen(Qt::blue, 2));
   // Polygon of QPointF doesn't work here, because this is interpreted as screen coordinates
-  foreach (GeoDataLineString line, m_marker_line) {
+  int i =0;
+  foreach (GeoDataLineString line, m_marker_line)
+  {
+
+    //set color
+    QColor lineColor(Qt::blue);
+    if(i<m_colors.size())
+    {
+      std_msgs::ColorRGBA color_msg = m_colors.at(i);
+      lineColor.setRed(255*color_msg.r);
+      lineColor.setGreen(255*color_msg.g);
+      lineColor.setBlue(255*color_msg.b);
+      lineColor.setAlpha(255*color_msg.a);
+
+      //convert white to red, in order to see something
+      if(lineColor.red() == 255 && lineColor.green() == 255 && lineColor.blue() == 255)
+      {
+        lineColor.setBlue(0);
+        lineColor.setGreen(0);
+      }
+    }
+
+    //draw line
+    painter->setPen(QPen(lineColor, 2));
     painter->drawPolyline(line);
+    i++;
   }
 }
 
@@ -99,11 +125,7 @@ bool DrawableMarbleWidget::posChanged(double x1, double y1, double x2, double y2
 
 std::pair<double, double> DrawableMarbleWidget::toGpsCoordinates(double x, double y)
 {
-  //Schlossplatz. TODO: get it from bag file
-  double ref_lat = 49.021267;
-  double ref_lon = 8.3983866;
-
-  return GetAbsoluteCoordinates(x, y, ref_lat, ref_lon);
+  return GetAbsoluteCoordinates(x, y, m_ref_lat, m_ref_lon);
 }
 
 void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::MarkerConstPtr &marker) {
@@ -111,24 +133,25 @@ void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::Marke
   switch (marker->type) {
   case visualization_msgs::Marker::LINE_STRIP:
   {
-    if(marker->ns == "object_track_line_filtered" || marker->ns == "track_driven_line")
+
+    //read out points and create a line
+    GeoDataLineString geo_polygon;
+    for (size_t i=0; i<marker->points.size(); i++) {
+      std::pair<double, double> coords = toGpsCoordinates(marker->points.at(i).x, marker->points.at(i).y);
+
+      GeoDataCoordinates geo_coords;
+      geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
+      geo_polygon.append(geo_coords);
+
+    }
+
+    m_marker_line.enqueue(geo_polygon);
+    m_colors.enqueue(marker->color);
+
+    if(m_marker_line.size() > 100 )
     {
-      //read out points and create a line
-      GeoDataLineString geo_polygon;
-      for (size_t i=0; i<marker->points.size(); i++) {
-        std::pair<double, double> coords = toGpsCoordinates(marker->points.at(i).x, marker->points.at(i).y);
-
-        GeoDataCoordinates geo_coords;
-        geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
-        geo_polygon.append(geo_coords);
-     }
-
-      m_marker_line.enqueue(geo_polygon);
-
-      if(m_marker_line.size() > 100 )
-      {
-        m_marker_line.dequeue();
-      }
+      m_marker_line.dequeue();
+      m_colors.dequeue();
     }
 
     break;
@@ -136,6 +159,12 @@ void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::Marke
   case visualization_msgs::Marker::CUBE:
     break;
   }
+}
+
+void DrawableMarbleWidget::referenceGpsCallback(const sensor_msgs::NavSatFixConstPtr &reference)
+{
+  m_ref_lat = reference->latitude;
+  m_ref_lon = reference->longitude;
 }
 
 // --- From Gps Tools
