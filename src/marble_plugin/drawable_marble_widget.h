@@ -42,6 +42,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #include <QQueue>
 
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <std_msgs/ColorRGBA.h>
 
@@ -59,13 +60,16 @@ public:
   void setCurrentPosition( GeoDataCoordinates& postion );
   void setMatchedPosition( GeoDataCoordinates& postion );
 
+  void visualizationMarkerArrayCallback(const visualization_msgs::MarkerArrayConstPtr &markers);
   void visualizationCallback(const visualization_msgs::MarkerConstPtr &marker);
+
   void referenceGpsCallback(const sensor_msgs::NavSatFixConstPtr &reference);
 
 protected:
   virtual void customPaint(GeoPainter *painter);
 
 private:
+  void addMarker(const visualization_msgs::Marker& marker);
   QImage roateCar(QImage* car_image);
 
   void loadImage(QImage& car, std::string& path );

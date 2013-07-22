@@ -4,6 +4,8 @@
 #include "iostream"
 #include "math.h"
 
+#include <boost/foreach.hpp>
+
 using namespace marble_plugin;
 
 
@@ -128,16 +130,30 @@ std::pair<double, double> DrawableMarbleWidget::toGpsCoordinates(double x, doubl
   return GetAbsoluteCoordinates(x, y, m_ref_lat, m_ref_lon, -M_PI_2);
 }
 
+
+void DrawableMarbleWidget::visualizationMarkerArrayCallback(const visualization_msgs::MarkerArrayConstPtr &markers)
+{
+  BOOST_FOREACH(visualization_msgs::Marker marker, markers->markers)
+  {
+    addMarker(marker);
+  }
+}
+
 void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::MarkerConstPtr &marker) {
+  addMarker(*marker);
+}
+
+void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
+{
   //save the marker in the right data structure, so customPaint() can use it to paint
-  switch (marker->type) {
+  switch (marker.type) {
   case visualization_msgs::Marker::LINE_STRIP:
   {
 
     //read out points and create a line
     GeoDataLineString geo_polygon;
-    for (size_t i=0; i<marker->points.size(); i++) {
-      std::pair<double, double> coords = toGpsCoordinates(marker->points.at(i).x, marker->points.at(i).y);
+    for (size_t i=0; i<marker.points.size(); i++) {
+      std::pair<double, double> coords = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
 
       GeoDataCoordinates geo_coords;
       geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
@@ -146,7 +162,7 @@ void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::Marke
     }
 
     m_marker_line.enqueue(geo_polygon);
-    m_colors.enqueue(marker->color);
+    m_colors.enqueue(marker.color);
 
     if(m_marker_line.size() > 100 )
     {
@@ -156,7 +172,41 @@ void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::Marke
 
     break;
   }
+
+  case visualization_msgs::Marker::LINE_LIST:
+  {
+
+    //read out points and create a line
+
+    for (size_t i=0; i<marker.points.size()-1; i+=2) {
+      std::pair<double, double> coords1 = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
+      std::pair<double, double> coords2 = toGpsCoordinates(marker.points.at(i+1).x, marker.points.at(i+1).y);
+
+      GeoDataCoordinates geo_coords1;
+      geo_coords1.set(coords1.second, coords1.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
+      GeoDataCoordinates geo_coords2;
+      geo_coords2.set(coords2.second, coords2.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
+      GeoDataLineString geo_polygon;
+      geo_polygon.append(geo_coords1);
+      geo_polygon.append(geo_coords2);
+
+      m_marker_line.enqueue(geo_polygon);
+      m_colors.enqueue(marker.color);
+
+      if(m_marker_line.size() > 100 )
+      {
+        m_marker_line.dequeue();
+        m_colors.dequeue();
+      }
+    }
+
+    break;
+  }
   case visualization_msgs::Marker::CUBE:
+    //! \todo project CUBES to ground plane and draw them as filled polygons
+    break;
+  case visualization_msgs::Marker::SPHERE:
+    //! \todo project SPHERES to ground plane and draw them as filled circles
     break;
   }
 }

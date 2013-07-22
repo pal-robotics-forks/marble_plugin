@@ -105,6 +105,7 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
   //subscribe to the visualization topic
   m_visualization_subscriber = getNodeHandle().subscribe("/visualization_marker", 1, &DrawableMarbleWidget::visualizationCallback, ui_.MarbleWidget);
+  m_visualization_marker_array_subscriber = getNodeHandle().subscribe("/visualization_marker_array", 1, &DrawableMarbleWidget::visualizationMarkerArrayCallback, ui_.MarbleWidget);
   m_reference_gps_subscriber = getNodeHandle().subscribe("/intersection_gps_position", 1, &DrawableMarbleWidget::referenceGpsCallback, ui_.MarbleWidget);
 
   m_mapcontrol_subscriber = getNodeHandle().subscribe< geometry_msgs::Twist >( "/mapcontrol" , 1 , &MarblePlugin::mapcontrolCallback, this );
@@ -399,6 +400,7 @@ void MarblePlugin::shutdownPlugin()
   m_selected_gps_pos_publisher.shutdown();
   m_mapcontrol_subscriber.shutdown();
   m_visualization_subscriber.shutdown();
+  m_visualization_marker_array_subscriber.shutdown();
   m_reference_gps_subscriber.shutdown();
 }
 
