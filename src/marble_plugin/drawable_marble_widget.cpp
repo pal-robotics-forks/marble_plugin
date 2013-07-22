@@ -125,7 +125,7 @@ bool DrawableMarbleWidget::posChanged(double x1, double y1, double x2, double y2
 
 std::pair<double, double> DrawableMarbleWidget::toGpsCoordinates(double x, double y)
 {
-  return GetAbsoluteCoordinates(x, y, m_ref_lat, m_ref_lon);
+  return GetAbsoluteCoordinates(x, y, m_ref_lat, m_ref_lon, -M_PI_2);
 }
 
 void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::MarkerConstPtr &marker) {
