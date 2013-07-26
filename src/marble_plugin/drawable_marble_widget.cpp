@@ -34,6 +34,8 @@ void DrawableMarbleWidget::loadImage( QImage& icon , std::string& path )
   icon = image;
 }
 
+
+
 void DrawableMarbleWidget::customPaint(Marble::GeoPainter *painter)
 {
   MarbleWidget::customPaint( painter );
@@ -59,34 +61,50 @@ void DrawableMarbleWidget::customPaint(Marble::GeoPainter *painter)
   }
 
   painter->setPen(QPen(Qt::blue, 2));
-  // Polygon of QPointF doesn't work here, because this is interpreted as screen coordinates
-  int i =0;
-  foreach (GeoDataLineString line, m_marker_line)
+  // Polygon of QPointF doesn't work here, because it is interpreted as screen coordinates
+  foreach (ColoredPolygon line, m_marker_line)
   {
-
     //set color
     QColor lineColor(Qt::blue);
-    if(i<m_colors.size())
-    {
-      std_msgs::ColorRGBA color_msg = m_colors.at(i);
-      lineColor.setRed(255*color_msg.r);
-      lineColor.setGreen(255*color_msg.g);
-      lineColor.setBlue(255*color_msg.b);
-      lineColor.setAlpha(255*color_msg.a);
-
-      //convert white to red, in order to see something
-      if(lineColor.red() == 255 && lineColor.green() == 255 && lineColor.blue() == 255)
-      {
-        lineColor.setBlue(0);
-        lineColor.setGreen(0);
-      }
-    }
+    std_msgs::ColorRGBA color_msg = line.color;
+    getColor(lineColor, color_msg);
 
     //draw line
     painter->setPen(QPen(lineColor, 2));
-    painter->drawPolyline(line);
+    painter->drawPolyline(line.polygon);
+  }
+
+  int i = 0;
+  foreach (Circle circle, m_marker_circle)
+  {
+    //set color
+    QColor color(Qt::blue);
+    std_msgs::ColorRGBA color_msg = circle.color;
+    getColor(color, color_msg);
+
+    //draw line
+    painter->setPen(QPen(color, 2));
+    painter->setBrush(QBrush(color, Qt::SolidPattern));
+    painter->drawEllipse(circle.mid, circle.r, circle.r, true);
     i++;
   }
+  m_marker_circle.clear();
+
+}
+
+void DrawableMarbleWidget::getColor(QColor& outputColor, std_msgs::ColorRGBA color_msg)
+{
+  outputColor.setRed(255*color_msg.r);
+  outputColor.setGreen(255*color_msg.g);
+  outputColor.setBlue(255*color_msg.b);
+  outputColor.setAlpha(255*color_msg.a);
+
+  //convert white to red, in order to see something
+//  if(outputColor.red() == 255 && outputColor.green() == 255 && outputColor.blue() == 255)
+//  {
+//    outputColor.setBlue(0);
+//    outputColor.setGreen(0);
+//  }
 }
 
 void DrawableMarbleWidget::setMatchedPosition( GeoDataCoordinates &postion )
@@ -149,7 +167,6 @@ void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
   switch (marker.type) {
   case visualization_msgs::Marker::LINE_STRIP:
   {
-
     //read out points and create a line
     GeoDataLineString geo_polygon;
     for (size_t i=0; i<marker.points.size(); i++) {
@@ -158,26 +175,23 @@ void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
       GeoDataCoordinates geo_coords;
       geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
       geo_polygon.append(geo_coords);
-
     }
 
-    m_marker_line.enqueue(geo_polygon);
-    m_colors.enqueue(marker.color);
+    ColoredPolygon polygon;
+    polygon.polygon = geo_polygon;
+    polygon.color = marker.color;
+
+    m_marker_line.enqueue(polygon);
 
     if(m_marker_line.size() > 100 )
-    {
       m_marker_line.dequeue();
-      m_colors.dequeue();
-    }
 
     break;
   }
 
   case visualization_msgs::Marker::LINE_LIST:
   {
-
     //read out points and create a line
-
     for (size_t i=0; i<marker.points.size()-1; i+=2) {
       std::pair<double, double> coords1 = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
       std::pair<double, double> coords2 = toGpsCoordinates(marker.points.at(i+1).x, marker.points.at(i+1).y);
@@ -190,14 +204,14 @@ void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
       geo_polygon.append(geo_coords1);
       geo_polygon.append(geo_coords2);
 
-      m_marker_line.enqueue(geo_polygon);
-      m_colors.enqueue(marker.color);
+      ColoredPolygon polygon;
+      polygon.polygon = geo_polygon;
+      polygon.color = marker.color;
+
+      m_marker_line.enqueue(polygon);
 
       if(m_marker_line.size() > 100 )
-      {
         m_marker_line.dequeue();
-        m_colors.dequeue();
-      }
     }
 
     break;
@@ -205,8 +219,22 @@ void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
   case visualization_msgs::Marker::CUBE:
     //! \todo project CUBES to ground plane and draw them as filled polygons
     break;
-  case visualization_msgs::Marker::SPHERE:
-    //! \todo project SPHERES to ground plane and draw them as filled circles
+  case visualization_msgs::Marker::SPHERE_LIST:
+    for (size_t i=0; i<marker.points.size(); i++) {
+      std::pair<double, double> coords = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
+      GeoDataCoordinates geo_coords;
+      geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
+
+      Circle circle;
+      circle.mid = geo_coords;
+      circle.r = 0.00002*marker.scale.x;
+      circle.color = marker.color;
+
+      m_marker_circle.enqueue(circle);
+//      if(m_marker_circle.size() > 4 )
+//        m_marker_line.dequeue();
+    }
+
     break;
   }
 }

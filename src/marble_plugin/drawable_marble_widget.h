@@ -46,6 +46,9 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #include <sensor_msgs/NavSatFix.h>
 #include <std_msgs/ColorRGBA.h>
 
+#include "visualisation_marker/circle.h"
+#include "visualisation_marker/colored_polygon.h"
+
 using namespace Marble;
 
 namespace marble_plugin {
@@ -65,6 +68,7 @@ public:
 
   void referenceGpsCallback(const sensor_msgs::NavSatFixConstPtr &reference);
 
+
 protected:
   virtual void customPaint(GeoPainter *painter);
 
@@ -75,6 +79,7 @@ private:
   void loadImage(QImage& car, std::string& path );
   bool posChanged(double x1, double y1, double x2, double y2, double threshold);
   std::pair<double, double> toGpsCoordinates(double x, double y);
+  void getColor(QColor &outputColor, std_msgs::ColorRGBA color_msg);
 
   /*! Get absolute coordinates in DEGREE of a given position to a reference position */
   std::pair<double, double> GetAbsoluteCoordinates( double x , double y , double ref_lat , double ref_lon, double ref_bearing = 0. );
@@ -85,8 +90,8 @@ private:
   QImage m_matched;
 
 
-  QQueue<GeoDataLineString> m_marker_line;
-  QQueue<std_msgs::ColorRGBA> m_colors;
+  QQueue<ColoredPolygon> m_marker_line;
+  QQueue<Circle> m_marker_circle;
 
   GeoDataCoordinates m_current_pos;
   GeoDataCoordinates m_matched_pos;
