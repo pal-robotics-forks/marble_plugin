@@ -75,8 +75,10 @@ public:
   void GpsCallbackCurrent( const sensor_msgs::NavSatFixConstPtr& gpspt );
   void GpsCallbackMatched( const sensor_msgs::NavSatFixConstPtr& gpspt );
 
+
 private slots:
   void gpsCoordinateSelected(qreal lon, qreal lat, GeoDataCoordinates::Unit unit);
+  void processMarkerCheckBoxCLicked();
 
 private:
 
@@ -100,6 +102,7 @@ Q_SIGNALS:
 
   private:
 
+  void subscribeVisualization();
   void clearKMLData();
   void addKMLData(std::map<QString, bool>& kml_files, bool overwrite);
   void mapcontrolCallback(const geometry_msgs::TwistConstPtr &msg);

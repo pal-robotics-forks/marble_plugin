@@ -105,9 +105,7 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   m_selected_gps_pos_publisher = getNodeHandle().advertise< sensor_msgs::NavSatFix >("gps_position", 1);
 
   //subscribe to the visualization topic
-  m_visualization_subscriber = getNodeHandle().subscribe("/visualization_marker", 1, &DrawableMarbleWidget::visualizationCallback, ui_.MarbleWidget);
-  m_visualization_marker_array_subscriber = getNodeHandle().subscribe("/visualization_marker_array", 1, &DrawableMarbleWidget::visualizationMarkerArrayCallback, ui_.MarbleWidget);
-  m_reference_gps_subscriber = getNodeHandle().subscribe("/intersection_gps_position", 1, &DrawableMarbleWidget::referenceGpsCallback, ui_.MarbleWidget);
+  subscribeVisualization();
 
   m_mapcontrol_subscriber = getNodeHandle().subscribe< geometry_msgs::Twist >( "/mapcontrol" , 1 , &MarblePlugin::mapcontrolCallback, this );
 
@@ -118,6 +116,7 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   connect(ui_.comboBox_matched_gps, SIGNAL(activated (const QString &)), this, SLOT (ChangeGPSTopicMatchedGPS(const QString &)));
 
 
+  connect(ui_.checkBox_process_marker, SIGNAL(clicked()), this, SLOT(processMarkerCheckBoxCLicked()));
   connect(ui_.refreshButton, SIGNAL(clicked()), this, SLOT(FindNavSatFixTopics()));
   connect(ui_.manageKMLButton, SIGNAL(clicked()), this, SLOT(ManageKML()));
 
@@ -335,6 +334,27 @@ void MarblePlugin::gpsCoordinateSelected(qreal lon, qreal lat, GeoDataCoordinate
   }
 }
 
+void MarblePlugin::processMarkerCheckBoxCLicked()
+{
+  if(ui_.checkBox_process_marker->isChecked())
+  {
+    subscribeVisualization();
+  }
+  else
+  {
+    m_visualization_subscriber.shutdown();
+    m_visualization_marker_array_subscriber.shutdown();
+    m_reference_gps_subscriber.shutdown();
+  }
+}
+
+void MarblePlugin::subscribeVisualization()
+{
+  m_visualization_subscriber = getNodeHandle().subscribe("/visualization_marker", 1, &DrawableMarbleWidget::visualizationCallback, ui_.MarbleWidget);
+  m_visualization_marker_array_subscriber = getNodeHandle().subscribe("/visualization_marker_array", 1, &DrawableMarbleWidget::visualizationMarkerArrayCallback, ui_.MarbleWidget);
+  m_reference_gps_subscriber = getNodeHandle().subscribe("/intersection_gps_position", 1, &DrawableMarbleWidget::referenceGpsCallback, ui_.MarbleWidget);
+}
+
 void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
 {
   // save intrinsic configuration, usually using:
@@ -348,6 +368,7 @@ void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cp
     instance_settings.setValue( "marble_theme_index" , ui_.comboBox_theme->currentIndex() );
     instance_settings.setValue( "marble_center" , ui_.checkBox_center->isChecked() );
     instance_settings.setValue( "piblish_gps" , ui_.checkBox_publish_gps->isChecked() );
+    instance_settings.setValue( "process_marker" , ui_.checkBox_process_marker->isChecked() );
 
 
     //save kml files
@@ -378,6 +399,7 @@ void MarblePlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, 
     ui_.comboBox_theme->setCurrentIndex( instance_settings.value( "marble_theme_index" , 0 ).toInt() );
     ui_.checkBox_center->setChecked( instance_settings.value( "marble_center" , true ).toBool());
     ui_.checkBox_publish_gps->setChecked( instance_settings.value( "piblish_gps" , true ).toBool());
+    ui_.checkBox_process_marker->setChecked( instance_settings.value( "process_marker" , true ).toBool());
 
 
     //load kml files
