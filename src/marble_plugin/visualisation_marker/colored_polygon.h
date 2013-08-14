@@ -12,5 +12,14 @@ public:
   std_msgs::ColorRGBA color;
 };
 
+struct PolygonSet
+{
+public:
+  std::list<ColoredPolygon> polygons;
+  ros::Time creation_time;
+  ros::Duration lifetime;
+};
+
+
 
 #endif // COLORED_POLYGON_H

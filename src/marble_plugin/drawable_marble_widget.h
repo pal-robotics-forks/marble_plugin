@@ -81,6 +81,10 @@ private:
   std::pair<double, double> toGpsCoordinates(double x, double y);
   void getColor(QColor &outputColor, std_msgs::ColorRGBA color_msg);
 
+  std::string getMarkerId(visualization_msgs::Marker marker);
+  void removeOldCircles(const ros::Time &actual_time);
+  void removeOldPolygons(const ros::Time &actual_time);
+
   /*! Get absolute coordinates in DEGREE of a given position to a reference position */
   std::pair<double, double> GetAbsoluteCoordinates( double x , double y , double ref_lat , double ref_lon, double ref_bearing = 0. );
   std::pair<double, double> GetNewPointBearingDistance(double a_lat, double a_lon, double bearing, double distance);
@@ -90,8 +94,8 @@ private:
   QImage m_matched;
 
 
-  QQueue<ColoredPolygon> m_marker_line;
-  QQueue<Circle> m_marker_circle;
+  std::map<std::string, PolygonSet> m_marker_line;
+  std::map<std::string, CircleSet> m_marker_circle;
 
   GeoDataCoordinates m_current_pos;
   GeoDataCoordinates m_matched_pos;

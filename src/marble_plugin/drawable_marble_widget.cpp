@@ -61,35 +61,41 @@ void DrawableMarbleWidget::customPaint(Marble::GeoPainter *painter)
   }
 
   painter->setPen(QPen(Qt::blue, 2));
-  // Polygon of QPointF doesn't work here, because it is interpreted as screen coordinates
-  foreach (ColoredPolygon line, m_marker_line)
-  {
-    //set color
-    QColor lineColor(Qt::blue);
-    std_msgs::ColorRGBA color_msg = line.color;
-    getColor(lineColor, color_msg);
 
-    //draw line
-    painter->setPen(QPen(lineColor, 2));
-    painter->drawPolyline(line.polygon);
+  for(std::map<std::string, PolygonSet>::iterator set_it = m_marker_line.begin(); set_it != m_marker_line.end();set_it++)
+  {
+    std::list<ColoredPolygon> polygons = set_it->second.polygons;
+    for (std::list<ColoredPolygon>::iterator poly_it = polygons.begin(); poly_it!= polygons.end(); poly_it++)
+    {
+      //set color
+      QColor lineColor(Qt::blue);
+      std_msgs::ColorRGBA color_msg = poly_it->color;
+      getColor(lineColor, color_msg);
+
+      //draw line
+      painter->setPen(QPen(lineColor, 2));
+      painter->drawPolyline(poly_it->polygon);
+    }
+
   }
 
-  int i = 0;
-  foreach (Circle circle, m_marker_circle)
+  for(std::map<std::string, CircleSet>::iterator set_it = m_marker_circle.begin(); set_it != m_marker_circle.end();set_it++)
   {
-    //set color
-    QColor color(Qt::blue);
-    std_msgs::ColorRGBA color_msg = circle.color;
-    getColor(color, color_msg);
+    std::list<Circle> circles = set_it->second.circles;
 
-    //draw line
-    painter->setPen(QPen(color, 2));
-    painter->setBrush(QBrush(color, Qt::SolidPattern));
-    painter->drawEllipse(circle.mid, circle.r, circle.r, true);
-    i++;
+    for (std::list<Circle>::iterator circle_it = circles.begin(); circle_it!= circles.end(); circle_it++)
+    {
+      //set color
+      QColor color(Qt::blue);
+      std_msgs::ColorRGBA color_msg = circle_it->color;
+      getColor(color, color_msg);
+
+      //draw line
+      painter->setPen(QPen(color, 2));
+      painter->setBrush(QBrush(color, Qt::SolidPattern));
+      painter->drawEllipse(circle_it->mid, circle_it->r, circle_it->r, true);
+    }
   }
-  m_marker_circle.clear();
-
 }
 
 void DrawableMarbleWidget::getColor(QColor& outputColor, std_msgs::ColorRGBA color_msg)
@@ -98,6 +104,34 @@ void DrawableMarbleWidget::getColor(QColor& outputColor, std_msgs::ColorRGBA col
   outputColor.setGreen(255*color_msg.g);
   outputColor.setBlue(255*color_msg.b);
   outputColor.setAlpha(255*color_msg.a);
+}
+
+std::string DrawableMarbleWidget::getMarkerId(visualization_msgs::Marker marker)
+{
+  std::stringstream id;
+  id << marker.ns<<"_"<<marker.id;
+  return id.str();
+}
+
+void DrawableMarbleWidget::removeOldCircles(const ros::Time& actual_time)
+{
+  for(std::map<std::string, CircleSet>::iterator set_it = m_marker_circle.begin(); set_it != m_marker_circle.end();set_it++)
+  {
+    CircleSet set = set_it->second;
+    if(set.lifetime.toNSec() > 0 && set.creation_time + set.lifetime > actual_time)
+      set_it->second.circles.clear();
+
+  }
+}
+
+void DrawableMarbleWidget::removeOldPolygons(const ros::Time& actual_time)
+{
+  for(std::map<std::string, PolygonSet>::iterator set_it = m_marker_line.begin(); set_it != m_marker_line.end();set_it++)
+  {
+    PolygonSet set = set_it->second;
+    if(set.lifetime.toNSec() > 0 && set.creation_time + set.lifetime > actual_time)
+      set_it->second.polygons.clear();
+  }
 }
 
 void DrawableMarbleWidget::setMatchedPosition( GeoDataCoordinates &postion )
@@ -157,10 +191,18 @@ void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::Marke
 void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
 {
   //save the marker in the right data structure, so customPaint() can use it to paint
+
+  removeOldPolygons(marker.header.stamp);
+  removeOldCircles(marker.header.stamp);
+
   switch (marker.type) {
   case visualization_msgs::Marker::LINE_STRIP:
   {
     //read out points and create a line
+    PolygonSet poly_set;
+    poly_set.creation_time = marker.header.stamp;
+    poly_set.lifetime = marker.lifetime;
+
     GeoDataLineString geo_polygon;
     for (size_t i=0; i<marker.points.size(); i++) {
       std::pair<double, double> coords = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
@@ -174,16 +216,19 @@ void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
     polygon.polygon = geo_polygon;
     polygon.color = marker.color;
 
-    m_marker_line.enqueue(polygon);
+    poly_set.polygons.push_back(polygon);
 
-    if(m_marker_line.size() > 100 )
-      m_marker_line.dequeue();
+    m_marker_line[getMarkerId(marker)] = poly_set;
 
     break;
   }
 
   case visualization_msgs::Marker::LINE_LIST:
   {
+    PolygonSet poly_set;
+    poly_set.creation_time = marker.header.stamp;
+    poly_set.lifetime = marker.lifetime;
+
     //read out points and create a line
     for (size_t i=0; i<marker.points.size()-1; i+=2) {
       std::pair<double, double> coords1 = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
@@ -201,11 +246,10 @@ void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
       polygon.polygon = geo_polygon;
       polygon.color = marker.color;
 
-      m_marker_line.enqueue(polygon);
-
-      if(m_marker_line.size() > 100 )
-        m_marker_line.dequeue();
+      poly_set.polygons.push_back(polygon);
     }
+
+    m_marker_line[getMarkerId(marker)] = poly_set;
 
     break;
   }
@@ -213,6 +257,11 @@ void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
     //! \todo project CUBES to ground plane and draw them as filled polygons
     break;
   case visualization_msgs::Marker::SPHERE_LIST:
+
+    CircleSet circle_set;
+    circle_set.creation_time = marker.header.stamp;
+    circle_set.lifetime = marker.lifetime;
+
     for (size_t i=0; i<marker.points.size(); i++) {
       std::pair<double, double> coords = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
       GeoDataCoordinates geo_coords;
@@ -223,10 +272,10 @@ void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
       circle.r = 0.00002*marker.scale.x;
       circle.color = marker.color;
 
-      m_marker_circle.enqueue(circle);
-//      if(m_marker_circle.size() > 4 )
-//        m_marker_line.dequeue();
+      circle_set.circles.push_back(circle);
     }
+
+    m_marker_circle[getMarkerId(marker)] = circle_set;
 
     break;
   }
