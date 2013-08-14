@@ -96,6 +96,13 @@
      <item row="2" column="2">
       <widget class="QComboBox" name="comboBox_matched_gps"/>
      </item>
+     <item row="4" column="3">
+      <widget class="QCheckBox" name="checkBox_publish_gps">
+       <property name="text">
+        <string>Publish GPS on click</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>

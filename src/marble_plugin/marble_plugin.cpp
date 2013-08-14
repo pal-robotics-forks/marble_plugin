@@ -324,11 +324,14 @@ void MarblePlugin::GpsCallbackCurrent( const sensor_msgs::NavSatFixConstPtr& gps
 void MarblePlugin::gpsCoordinateSelected(qreal lon, qreal lat, GeoDataCoordinates::Unit unit) {
   GeoDataCoordinates coords(lon, lat, unit);
 
-  sensor_msgs::NavSatFix msg;
-  msg.longitude = coords.longitude(GeoDataCoordinates::Degree);
-  msg.latitude = coords.latitude(GeoDataCoordinates::Degree);
+  if(ui_.checkBox_publish_gps->isChecked())
+  {
+    sensor_msgs::NavSatFix msg;
+    msg.longitude = coords.longitude(GeoDataCoordinates::Degree);
+    msg.latitude = coords.latitude(GeoDataCoordinates::Degree);
 
-  m_selected_gps_pos_publisher.publish(msg);
+    m_selected_gps_pos_publisher.publish(msg);
+  }
 }
 
 void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
@@ -343,6 +346,7 @@ void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cp
     instance_settings.setValue( "marble_plugin_zoom" , ui_.MarbleWidget->distance() );
     instance_settings.setValue( "marble_theme_index" , ui_.comboBox_theme->currentIndex() );
     instance_settings.setValue( "marble_center" , ui_.checkBox_center->isChecked() );
+    instance_settings.setValue( "piblish_gps" , ui_.checkBox_publish_gps->isChecked() );
 
 
     //save kml files
@@ -372,6 +376,7 @@ void MarblePlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, 
 
     ui_.comboBox_theme->setCurrentIndex( instance_settings.value( "marble_theme_index" , 0 ).toInt() );
     ui_.checkBox_center->setChecked( instance_settings.value( "marble_center" , true ).toBool());
+    ui_.checkBox_publish_gps->setChecked( instance_settings.value( "piblish_gps" , true ).toBool());
 
 
     //load kml files
