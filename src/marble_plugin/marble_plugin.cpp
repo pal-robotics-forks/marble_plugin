@@ -105,7 +105,8 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   m_selected_gps_pos_publisher = getNodeHandle().advertise< sensor_msgs::NavSatFix >("gps_position", 1);
 
   //subscribe to the visualization topic
-  subscribeVisualization();
+  if(ui_.checkBox_process_marker->isChecked())
+    subscribeVisualization();
 
   m_mapcontrol_subscriber = getNodeHandle().subscribe< geometry_msgs::Twist >( "/mapcontrol" , 1 , &MarblePlugin::mapcontrolCallback, this );
 
