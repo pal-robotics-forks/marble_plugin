@@ -119,7 +119,7 @@ void DrawableMarbleWidget::removeOldCircles(const ros::Time& actual_time)
   {
     CircleSet set = set_it->second;
     if(set.lifetime.toNSec() > 0 && set.creation_time + set.lifetime > actual_time)
-      set_it->second.circles.clear();
+      m_marker_circle.erase(set_it->first);
 
   }
 }
@@ -130,7 +130,7 @@ void DrawableMarbleWidget::removeOldPolygons(const ros::Time& actual_time)
   {
     PolygonSet set = set_it->second;
     if(set.lifetime.toNSec() > 0 && set.creation_time + set.lifetime > actual_time)
-      set_it->second.polygons.clear();
+      m_marker_line.erase(set_it->first);
   }
 }
 
@@ -188,6 +188,81 @@ void DrawableMarbleWidget::visualizationCallback(const visualization_msgs::Marke
   addMarker(*marker);
 }
 
+void DrawableMarbleWidget::addLineStrip(const visualization_msgs::Marker &marker)
+{
+  PolygonSet poly_set;
+  poly_set.creation_time = marker.header.stamp;
+  poly_set.lifetime = marker.lifetime;
+
+  GeoDataLineString geo_polygon;
+  for (size_t i=0; i<marker.points.size(); i++) {
+    std::pair<double, double> coords = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
+
+    GeoDataCoordinates geo_coords;
+    geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
+    geo_polygon.append(geo_coords);
+  }
+
+  ColoredPolygon polygon;
+  polygon.polygon = geo_polygon;
+  polygon.color = marker.color;
+
+  poly_set.polygons.push_back(polygon);
+
+  m_marker_line[getMarkerId(marker)] = poly_set;
+}
+
+void DrawableMarbleWidget::addLineList(const visualization_msgs::Marker &marker)
+{
+  PolygonSet poly_set;
+  poly_set.creation_time = marker.header.stamp;
+  poly_set.lifetime = marker.lifetime;
+
+  //read out points and create a line
+  for (size_t i=0; i<marker.points.size()-1; i+=2) {
+    std::pair<double, double> coords1 = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
+    std::pair<double, double> coords2 = toGpsCoordinates(marker.points.at(i+1).x, marker.points.at(i+1).y);
+
+    GeoDataCoordinates geo_coords1;
+    geo_coords1.set(coords1.second, coords1.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
+    GeoDataCoordinates geo_coords2;
+    geo_coords2.set(coords2.second, coords2.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
+    GeoDataLineString geo_polygon;
+    geo_polygon.append(geo_coords1);
+    geo_polygon.append(geo_coords2);
+
+    ColoredPolygon polygon;
+    polygon.polygon = geo_polygon;
+    polygon.color = marker.color;
+
+    poly_set.polygons.push_back(polygon);
+  }
+
+  m_marker_line[getMarkerId(marker)] = poly_set;
+}
+
+void DrawableMarbleWidget::addSphereList(const visualization_msgs::Marker &marker)
+{
+  CircleSet circle_set;
+  circle_set.creation_time = marker.header.stamp;
+  circle_set.lifetime = marker.lifetime;
+
+  for (size_t i=0; i<marker.points.size(); i++) {
+    std::pair<double, double> coords = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
+    GeoDataCoordinates geo_coords;
+    geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
+
+    Circle circle;
+    circle.mid = geo_coords;
+    circle.r = 0.00002*marker.scale.x;
+    circle.color = marker.color;
+
+    circle_set.circles.push_back(circle);
+  }
+
+  m_marker_circle[getMarkerId(marker)] = circle_set;
+}
+
 void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
 {
   //save the marker in the right data structure, so customPaint() can use it to paint
@@ -195,89 +270,36 @@ void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
   removeOldPolygons(marker.header.stamp);
   removeOldCircles(marker.header.stamp);
 
-  switch (marker.type) {
-  case visualization_msgs::Marker::LINE_STRIP:
+  if(marker.action == visualization_msgs::Marker::ADD)
   {
-    //read out points and create a line
-    PolygonSet poly_set;
-    poly_set.creation_time = marker.header.stamp;
-    poly_set.lifetime = marker.lifetime;
+    switch (marker.type)
+    {
+      case visualization_msgs::Marker::LINE_STRIP:
+      {
+        addLineStrip(marker);
+        break;
+      }
 
-    GeoDataLineString geo_polygon;
-    for (size_t i=0; i<marker.points.size(); i++) {
-      std::pair<double, double> coords = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
-
-      GeoDataCoordinates geo_coords;
-      geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
-      geo_polygon.append(geo_coords);
+      case visualization_msgs::Marker::LINE_LIST:
+      {
+        addLineList(marker);
+        break;
+      }
+      case visualization_msgs::Marker::CUBE:
+        //! \todo project CUBES to ground plane and draw them as filled polygons
+        break;
+      case visualization_msgs::Marker::SPHERE_LIST:
+      {
+        addSphereList(marker);
+        break;
+      }
     }
-
-    ColoredPolygon polygon;
-    polygon.polygon = geo_polygon;
-    polygon.color = marker.color;
-
-    poly_set.polygons.push_back(polygon);
-
-    m_marker_line[getMarkerId(marker)] = poly_set;
-
-    break;
   }
-
-  case visualization_msgs::Marker::LINE_LIST:
+  else if (marker.action == visualization_msgs::Marker::DELETE)
   {
-    PolygonSet poly_set;
-    poly_set.creation_time = marker.header.stamp;
-    poly_set.lifetime = marker.lifetime;
-
-    //read out points and create a line
-    for (size_t i=0; i<marker.points.size()-1; i+=2) {
-      std::pair<double, double> coords1 = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
-      std::pair<double, double> coords2 = toGpsCoordinates(marker.points.at(i+1).x, marker.points.at(i+1).y);
-
-      GeoDataCoordinates geo_coords1;
-      geo_coords1.set(coords1.second, coords1.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
-      GeoDataCoordinates geo_coords2;
-      geo_coords2.set(coords2.second, coords2.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
-      GeoDataLineString geo_polygon;
-      geo_polygon.append(geo_coords1);
-      geo_polygon.append(geo_coords2);
-
-      ColoredPolygon polygon;
-      polygon.polygon = geo_polygon;
-      polygon.color = marker.color;
-
-      poly_set.polygons.push_back(polygon);
-    }
-
-    m_marker_line[getMarkerId(marker)] = poly_set;
-
-    break;
-  }
-  case visualization_msgs::Marker::CUBE:
-    //! \todo project CUBES to ground plane and draw them as filled polygons
-    break;
-  case visualization_msgs::Marker::SPHERE_LIST:
-
-    CircleSet circle_set;
-    circle_set.creation_time = marker.header.stamp;
-    circle_set.lifetime = marker.lifetime;
-
-    for (size_t i=0; i<marker.points.size(); i++) {
-      std::pair<double, double> coords = toGpsCoordinates(marker.points.at(i).x, marker.points.at(i).y);
-      GeoDataCoordinates geo_coords;
-      geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
-
-      Circle circle;
-      circle.mid = geo_coords;
-      circle.r = 0.00002*marker.scale.x;
-      circle.color = marker.color;
-
-      circle_set.circles.push_back(circle);
-    }
-
-    m_marker_circle[getMarkerId(marker)] = circle_set;
-
-    break;
+    std::string index = getMarkerId(marker);
+    m_marker_circle.erase(index);
+    m_marker_line.erase(index);
   }
 }
 

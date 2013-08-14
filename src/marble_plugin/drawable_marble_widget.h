@@ -69,6 +69,7 @@ public:
   void referenceGpsCallback(const sensor_msgs::NavSatFixConstPtr &reference);
 
 
+
 protected:
   virtual void customPaint(GeoPainter *painter);
 
@@ -84,6 +85,9 @@ private:
   std::string getMarkerId(visualization_msgs::Marker marker);
   void removeOldCircles(const ros::Time &actual_time);
   void removeOldPolygons(const ros::Time &actual_time);
+  void addLineStrip(const visualization_msgs::Marker &marker);
+  void addLineList(const visualization_msgs::Marker &marker);
+  void addSphereList(const visualization_msgs::Marker &marker);
 
   /*! Get absolute coordinates in DEGREE of a given position to a reference position */
   std::pair<double, double> GetAbsoluteCoordinates( double x , double y , double ref_lat , double ref_lon, double ref_bearing = 0. );
