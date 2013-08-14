@@ -86,7 +86,8 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
   ui_.MarbleWidget->setMapThemeId("earth/openstreetmap/openstreetmap.dgml");
   ui_.MarbleWidget->setProjection( Marble::Mercator );
-  ui_.MarbleWidget->centerOn( 115.87164 , -31.93452 , false );  // My Happy Place: The Scotto
+  //ui_.MarbleWidget->centerOn( 115.87164 , -31.93452 , false );  // My Happy Place: The Scotto
+  ui_.MarbleWidget->centerOn( 8.426, 49.01, false );  
   ui_.MarbleWidget->setDistance(0.05);
 
   context.addWidget(widget_);
