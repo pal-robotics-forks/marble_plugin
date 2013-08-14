@@ -98,13 +98,6 @@ void DrawableMarbleWidget::getColor(QColor& outputColor, std_msgs::ColorRGBA col
   outputColor.setGreen(255*color_msg.g);
   outputColor.setBlue(255*color_msg.b);
   outputColor.setAlpha(255*color_msg.a);
-
-  //convert white to red, in order to see something
-//  if(outputColor.red() == 255 && outputColor.green() == 255 && outputColor.blue() == 255)
-//  {
-//    outputColor.setBlue(0);
-//    outputColor.setGreen(0);
-//  }
 }
 
 void DrawableMarbleWidget::setMatchedPosition( GeoDataCoordinates &postion )

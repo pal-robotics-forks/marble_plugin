@@ -295,13 +295,13 @@ void MarblePlugin::GpsCallbackMatched( const sensor_msgs::NavSatFixConstPtr& gps
     qreal x;
     qreal y;
 
-    // Recenter if lat long is not on screen
-    bool recenter = !ui_.MarbleWidget->screenCoordinates(gpspt->longitude,gpspt->latitude , x , y );
-    recenter |= ui_.checkBox_center->isChecked();
+    ui_.MarbleWidget->screenCoordinates(gpspt->longitude,gpspt->latitude , x , y );
+
+    bool recenter = ui_.checkBox_center->isChecked();
 
     // Recenter if lat long within <threshold> pixels away from center
     qreal threshold = 20;
-    recenter |=  ((x - _x) * (x - _x) + (y - _y) * (y - _y)) > threshold;
+    recenter &=  ((x - _x) * (x - _x) + (y - _y) * (y - _y)) > threshold;
 
     if( recenter )
     {
