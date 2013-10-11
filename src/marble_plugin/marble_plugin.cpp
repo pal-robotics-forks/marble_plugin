@@ -319,6 +319,10 @@ void MarblePlugin::GpsCallbackCurrent( const sensor_msgs::NavSatFixConstPtr& gps
     GeoDataCoordinates postition(gpspt->longitude, gpspt->latitude, gpspt->altitude, GeoDataCoordinates::Degree);
     ui_.MarbleWidget->setCurrentPosition(postition);
 
+    // set reference point for marker calculation
+    //! \todo it would be nice to replace this by automatically finding the gps topic that has the frame id of the visualization markers
+    ui_.MarbleWidget->referenceGpsCallback(gpspt);
+
     // @TODO: Marble Widget does not repaint
 }
 
@@ -353,7 +357,7 @@ void MarblePlugin::subscribeVisualization()
 {
   m_visualization_subscriber = getNodeHandle().subscribe("/visualization_marker", 1, &DrawableMarbleWidget::visualizationCallback, ui_.MarbleWidget);
   m_visualization_marker_array_subscriber = getNodeHandle().subscribe("/visualization_marker_array", 1, &DrawableMarbleWidget::visualizationMarkerArrayCallback, ui_.MarbleWidget);
-  m_reference_gps_subscriber = getNodeHandle().subscribe("/intersection_gps_position", 1, &DrawableMarbleWidget::referenceGpsCallback, ui_.MarbleWidget);
+//  m_reference_gps_subscriber = getNodeHandle().subscribe("/intersection_gps_position", 1, &DrawableMarbleWidget::referenceGpsCallback, ui_.MarbleWidget);
 }
 
 void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
