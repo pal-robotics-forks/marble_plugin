@@ -88,6 +88,7 @@ private:
   void addLineStrip(const visualization_msgs::Marker &marker);
   void addLineList(const visualization_msgs::Marker &marker);
   void addSphereList(const visualization_msgs::Marker &marker);
+  void addSphere(const visualization_msgs::Marker &marker);
 
   /*! Get absolute coordinates in DEGREE of a given position to a reference position */
   std::pair<double, double> GetAbsoluteCoordinates( double x , double y , double ref_lat , double ref_lon, double ref_bearing = 0. );

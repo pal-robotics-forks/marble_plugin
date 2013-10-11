@@ -263,6 +263,27 @@ void DrawableMarbleWidget::addSphereList(const visualization_msgs::Marker &marke
   m_marker_circle[getMarkerId(marker)] = circle_set;
 }
 
+void DrawableMarbleWidget::addSphere(const visualization_msgs::Marker &marker)
+{
+  CircleSet circle_set;
+  circle_set.creation_time = marker.header.stamp;
+  circle_set.lifetime = marker.lifetime;
+
+  std::pair<double, double> coords = toGpsCoordinates(marker.pose.position.x, marker.pose.position.y);
+  GeoDataCoordinates geo_coords;
+  geo_coords.set(coords.second, coords.first, GeoDataCoordinates::Degree, GeoDataCoordinates::Degree);
+
+  Circle circle;
+  circle.mid = geo_coords;
+  circle.r = 0.00002*marker.scale.x;
+  circle.color = marker.color;
+
+  circle_set.circles.push_back(circle);
+
+
+  m_marker_circle[getMarkerId(marker)] = circle_set;
+}
+
 void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
 {
   //save the marker in the right data structure, so customPaint() can use it to paint
@@ -291,6 +312,11 @@ void DrawableMarbleWidget::addMarker(const visualization_msgs::Marker &marker)
       case visualization_msgs::Marker::SPHERE_LIST:
       {
         addSphereList(marker);
+        break;
+      }
+      case visualization_msgs::Marker::SPHERE:
+      {
+        addSphere(marker);
         break;
       }
     }
