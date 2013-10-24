@@ -43,9 +43,9 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #include <QMutex>
 
 // Own Includes
-#include <marble_plugin/ui_marble_plugin.h>
+#include <ui_marble_plugin.h>
 
-namespace marble_plugin {
+namespace rqt_marble_plugin {
 
 class MarblePlugin
   : public rqt_gui_cpp::Plugin
