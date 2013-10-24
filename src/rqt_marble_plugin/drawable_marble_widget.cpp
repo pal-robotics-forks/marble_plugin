@@ -1,4 +1,4 @@
-#include "drawable_marble_widget.h"
+#include "rqt_marble_plugin/drawable_marble_widget.h"
 
 #include "ros/package.h"
 #include "iostream"

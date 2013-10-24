@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   rqt_gui
   rqt_gui_cpp
   sensor_msgs
+  visualization_msgs
 )
 
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
@@ -18,10 +19,12 @@ find_package(Marble REQUIRED)
 
 set(rqt_marble_plugin_SRCS
   src/rqt_marble_plugin/marble_plugin.cpp
+  src/rqt_marble_plugin/drawable_marble_widget.cpp
 )
 
 set(rqt_marble_plugin_HDRS
   include/rqt_marble_plugin/marble_plugin.h
+  include/rqt_marble_plugin/drawable_marble_widget.h
 )
 
 set(rqt_marble_plugin_UIS
