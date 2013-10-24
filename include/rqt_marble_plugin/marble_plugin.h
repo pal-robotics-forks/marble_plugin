@@ -7,7 +7,6 @@ All rights reserved.
 
 Redistribution and use in source and binary forms are permitted
 provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
 advertising materials, and other materials related to such
 distribution and use acknowledge that the software was developed
 by TB.  The name of the
@@ -45,11 +44,11 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #include <QMutex>
 
 // Own Includes
-#include <marble_plugin/ui_marble_plugin.h>
+#include <ui_marble_plugin.h>
 #include "drawable_marble_widget.h"
 #include "manage_kml_dialog.h"
 
-namespace marble_plugin {
+namespace rqt_marble_plugin {
 
 class MarblePlugin
   : public rqt_gui_cpp::Plugin

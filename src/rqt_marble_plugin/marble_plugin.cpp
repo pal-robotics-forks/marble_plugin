@@ -39,7 +39,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #include <QModelIndex>
 
 // Own Includes
-#include "marble_plugin.h"
+#include "rqt_marble_plugin/marble_plugin.h"
 
 // ROS Plugin Includes
 #include <pluginlib/class_list_macros.h>
@@ -59,7 +59,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 // @TODO: ComboBox for the MarbleWidget projection method
 // @TOOD: Draw icon on the current gps pos (MarbleWidget needs to be subclassed (custom paint))
 
-namespace marble_plugin {
+namespace rqt_marble_plugin {
 
 MarblePlugin::MarblePlugin()
   : rqt_gui_cpp::Plugin()
@@ -448,5 +448,4 @@ void triggerConfiguration()
 }*/
 
 } // namespace
-PLUGINLIB_DECLARE_CLASS(marble_plugin, MarblePlugin, marble_plugin::MarblePlugin, rqt_gui_cpp::Plugin)
-
+PLUGINLIB_EXPORT_CLASS( rqt_marble_plugin::MarblePlugin , rqt_gui_cpp::Plugin )
