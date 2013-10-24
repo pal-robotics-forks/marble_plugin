@@ -51,7 +51,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 using namespace Marble;
 
-namespace marble_plugin {
+namespace rqt_marble_plugin {
 
 class DrawableMarbleWidget : public MarbleWidget
 {

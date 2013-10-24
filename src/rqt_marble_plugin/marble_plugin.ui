@@ -20,7 +20,7 @@
       <widget class="QComboBox" name="comboBox_current_gps"/>
      </item>
      <item row="7" column="0" colspan="5">
-      <widget class="marble_plugin::DrawableMarbleWidget" name="MarbleWidget" native="true"/>
+      <widget class="rqt_marble_plugin::DrawableMarbleWidget" name="MarbleWidget" native="true"/>
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label">
@@ -122,9 +122,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>marble_plugin::DrawableMarbleWidget</class>
+   <class>rqt_marble_plugin::DrawableMarbleWidget</class>
    <extends>QWidget</extends>
-   <header>marble_plugin/drawable_marble_widget.h</header>
+   <header>rqt_marble_plugin/drawable_marble_widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

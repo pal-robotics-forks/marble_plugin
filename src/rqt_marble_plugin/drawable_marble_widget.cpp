@@ -6,7 +6,7 @@
 
 #include <boost/foreach.hpp>
 
-using namespace marble_plugin;
+using namespace rqt_marble_plugin;
 
 
 DrawableMarbleWidget::DrawableMarbleWidget(QWidget *parent)
