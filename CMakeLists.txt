@@ -26,8 +26,8 @@ set(rqt_marble_plugin_SRCS
 set(rqt_marble_plugin_HDRS
   include/rqt_marble_plugin/marble_plugin.h
   include/rqt_marble_plugin/drawable_marble_widget.h
-  include/rqt_marble_plugin/visualisation_marker/circle.h
-  include/rqt_marble_plugin/visualisation_marker/colored_polygon.h
+#  include/rqt_marble_plugin/visualisation_marker/circle.h
+#  include/rqt_marble_plugin/visualisation_marker/colored_polygon.h
   include/rqt_marble_plugin/manage_kml_dialog.h
 )
 
