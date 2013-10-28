@@ -96,7 +96,7 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
   //set refresh icon
   QIcon refresh_icon;
-  std::string path = ros::package::getPath("marble_plugin")+"/etc/refresh.png";
+  std::string path = ros::package::getPath("rqt_marble_plugin")+"/etc/refresh.png";
   QString icon_path(path.c_str());
   refresh_icon.addFile(icon_path);
   ui_.refreshButton->setIcon(refresh_icon);

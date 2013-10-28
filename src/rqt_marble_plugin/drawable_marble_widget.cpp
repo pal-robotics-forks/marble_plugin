@@ -17,13 +17,13 @@ DrawableMarbleWidget::DrawableMarbleWidget(QWidget *parent)
     m_ref_lon(8.3983866)
 {
   std::string path;
-  path = ros::package::getPath("marble_plugin")+"/etc/arrow.png";
+  path = ros::package::getPath("rqt_marble_plugin")+"/etc/arrow.png";
   loadImage(m_arrow, path);
 
-  path = ros::package::getPath("marble_plugin")+"/etc/sattelite.png";
+  path = ros::package::getPath("rqt_marble_plugin")+"/etc/sattelite.png";
   loadImage(m_current_pos_icon, path);
 
-  path = ros::package::getPath("marble_plugin")+"/etc/matched.png";
+  path = ros::package::getPath("rqt_marble_plugin")+"/etc/matched.png";
   loadImage(m_matched, path);
 }
 
