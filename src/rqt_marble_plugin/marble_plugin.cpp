@@ -378,7 +378,7 @@ void MarblePlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cp
 
     //save kml files
     int i=0;
-    instance_settings.setValue("kml_number", m_last_kml_data.size());
+    instance_settings.setValue("kml_number", QVariant::fromValue(m_last_kml_data.size()) );
     for(std::map< QString, bool>::const_iterator it = m_last_kml_data.begin(); it != m_last_kml_data.end(); it++)
     {
         QString key("kml_file_");
