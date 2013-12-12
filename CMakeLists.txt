@@ -101,3 +101,10 @@ install(PROGRAMS scripts/rqt_marble_plugin
 install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
+
+#
+# Custom Target for the Headers, Launch and xml files
+#
+if(EXISTS "${CMAKE_SOURCE_DIR}/CMakeMacros.txt")
+  INCLUDE( "${CMAKE_SOURCE_DIR}/CMakeMacros.txt" )
+endif()
