@@ -43,6 +43,8 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #include <QtCore/QObject>
 #include <QMutex>
 
+#include <marble/MapThemeManager.h>
+
 // Own Includes
 #include <ui_marble_plugin.h>
 #include "drawable_marble_widget.h"
@@ -109,6 +111,8 @@ Q_SIGNALS:
   Ui_Form ui_;
 
   QWidget* widget_;
+
+  Marble::MapThemeManager m_map_theme_manager;
 
   ros::Subscriber m_current_pos_subscriber;
   ros::Subscriber m_matched_pos_subscriber;

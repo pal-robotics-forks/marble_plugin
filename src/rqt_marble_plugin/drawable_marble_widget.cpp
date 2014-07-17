@@ -56,7 +56,9 @@ void DrawableMarbleWidget::customPaint(Marble::GeoPainter *painter)
   {
     painter->save();
     painter->setPen( QPen(Qt::red  , 2 ) );
-    painter->drawLine( m_matched_pos , m_current_pos );
+    GeoDataLineString lineString;
+    lineString << m_matched_pos << m_current_pos;
+    painter->drawPolyline(lineString);
     painter->restore();
   }
 

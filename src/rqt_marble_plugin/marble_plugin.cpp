@@ -91,7 +91,7 @@ void MarblePlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   ui_.MarbleWidget->setDistance(0.05);
 
   context.addWidget(widget_);
-  ui_.comboBox_theme->setModel( ui_.MarbleWidget->model()->mapThemeManager()->mapThemeModel() );
+  ui_.comboBox_theme->setModel( m_map_theme_manager.mapThemeModel() );
 
 
   //set refresh icon
@@ -247,7 +247,7 @@ void MarblePlugin::FindNavSatFixTopics()
 
 void MarblePlugin::ChangeMarbleModelTheme(int idx )
 {
-    QStandardItemModel* model = ui_.MarbleWidget->model()->mapThemeManager()->mapThemeModel();
+    QStandardItemModel* model = m_map_theme_manager.mapThemeModel();
     QModelIndex index = model->index( idx , 0 );
     QString theme = model->data( index , Qt::UserRole+1  ).toString();
 
