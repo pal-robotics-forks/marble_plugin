@@ -24,6 +24,7 @@
   <run_depend>rqt_gui_cpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>visualization_msgs</run_depend>
+  <run_depend>libmarble-dev</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
